@@ -170,29 +170,33 @@ export function renderMonsters(grid, gameState) {
  */
 export function renderVideos(container, galaxyId) {
   if (!container) return;
-  
+
   const videos = BILIBILI_VIDEOS[galaxyId] || [];
-  
+
   if (videos.length === 0) {
     container.innerHTML = '<p style="color: #c7d2fe; text-align: center;">暂无配套视频</p>';
     return;
   }
-  
-  const videoCards = videos.map(video => `
+
+  const videoCards = videos.map(video => {
+    // 清理 BV 号，去除首尾空格和可能的斜杠
+    const cleanBv = (video.bv || '').trim().replace(/\/$/, '');
+    return `
     <div class="video-card">
-      <iframe src="https://player.bilibili.com/player.html?bvid=${video.bv}&page=1&high_quality=1" 
-              scrolling="no" 
-              border="0" 
-              frameborder="no" 
-              framespacing="0" 
+      <iframe src="https://player.bilibili.com/player.html?bvid=${cleanBv}&page=1&high_quality=1"
+              scrolling="no"
+              border="0"
+              frameborder="no"
+              framespacing="0"
               allowfullscreen="true"
               title="${escapeHtml(video.title)}"
               loading="lazy">
       </iframe>
       <div class="video-title">${escapeHtml(video.title)}</div>
     </div>
-  `).join('');
-  
+  `;
+  }).join('');
+
   container.innerHTML = `<div class="video-grid">${videoCards}</div>`;
 }
 
