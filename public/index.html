@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="数学星环 - 12 天超能觉醒计划，通过游戏化学习掌握初中数学核心知识">
+  <meta name="theme-color" content="#0f0c29">
+  
+  <title>数学星环 · 12 天超能觉醒计划</title>
+  
+  <!-- 预加载关键资源 -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  
+  <!-- Tailwind CSS (开发版，生产环境可优化) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- 中文字体 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/ma-shan-zheng@5.0.18/index.css">
+  
+  <!-- 自定义样式 -->
+  <link rel="stylesheet" href="./src/css/styles.css">
+</head>
+<body>
+  <!-- 星空背景 -->
+  <div id="stars" class="stars" aria-hidden="true"></div>
+  
+  <!-- 启动画面 -->
+  <div id="splash" role="alertdialog" aria-labelledby="splash-title">
+    <div class="splash-title font-title" id="splash-title">数学星环</div>
+    <div style="color: #c7d2fe; margin-top: 1rem; font-size: 1.2rem;">12 天超能觉醒计划</div>
+    <div style="font-size: 5rem; margin: 2rem 0;" class="spaceship-float" aria-hidden="true">🚀</div>
+    <button class="btn-start" onclick="startGame()" aria-label="开始数学之旅">
+      开启星际之旅
+    </button>
+  </div>
+  
+  <!-- 主应用 -->
+  <div id="main-app" role="application" aria-label="数学星环应用">
+    <!-- 顶部导航 -->
+    <nav class="top-nav" role="navigation" aria-label="主导航">
+      <div class="nav-brand">
+        <span aria-hidden="true">🌟</span>
+        <span>数学星环</span>
+      </div>
+      
+      <div class="nav-stats" aria-label="玩家状态">
+        <div class="stat-item">
+          <span aria-hidden="true">💰</span>
+          <span id="coin-count">100</span>
+        </div>
+        <div class="stat-item">
+          <span aria-hidden="true">⭐</span>
+          <span id="star-count">0</span>
+        </div>
+        <div class="stat-item">
+          <span aria-hidden="true">🎖️</span>
+          <span>Lv.<span id="player-level">1</span></span>
+        </div>
+        <div class="exp-container">
+          <div class="exp-bar-bg">
+            <div id="exp-bar" class="exp-bar-fill" style="width: 0%" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+          </div>
+        </div>
+      </div>
+      
+      <div style="display: flex; gap: 0.5rem;">
+        <button class="nav-btn nav-btn active" data-page="map" onclick="showPage('map')" aria-label="星系地图">
+          🗺️ 地图
+        </button>
+        <button class="nav-btn nav-btn" data-page="achievements" onclick="showPage('achievements')" aria-label="成就系统">
+          🏆 成就
+        </button>
+        <button class="nav-btn nav-btn" data-page="monsters" onclick="showPage('monsters')" aria-label="怪兽图鉴">
+          👾 怪兽
+        </button>
+        <button class="nav-btn nav-btn" data-page="profile" onclick="showPage('profile')" aria-label="个人资料">
+          👤 档案
+        </button>
+      </div>
+    </nav>
+    
+    <!-- 星系地图页面 -->
+    <main id="page-map" class="page active galaxy-map" role="main" aria-labelledby="map-heading">
+      <header class="map-header">
+        <h1 id="map-heading" class="map-title font-title">选择你的星系</h1>
+        <p style="color: #c7d2fe; margin-top: 0.5rem;">完成每个星系的挑战，解锁更多知识！</p>
+      </header>
+      
+      <div id="galaxy-grid" class="galaxy-grid" role="list" aria-label="星系列表">
+        <!-- 由 JS 动态渲染 -->
+      </div>
+    </main>
+    
+    <!-- 学习页面 -->
+    <section id="page-learn" class="page learning-page" role="region" aria-labelledby="learn-heading">
+      <h1 id="learn-heading" class="visually-hidden">学习内容</h1>
+      <div id="learning-content">
+        <!-- 由 JS 动态渲染 -->
+      </div>
+    </section>
+    
+    <!-- 成就页面 -->
+    <section id="page-achievements" class="page galaxy-map" role="region" aria-labelledby="achievements-heading">
+      <header class="map-header">
+        <h1 id="achievements-heading" class="map-title font-title">成就殿堂</h1>
+        <p style="color: #c7d2fe; margin-top: 0.5rem;">解锁成就，证明你的数学实力！</p>
+      </header>
+      
+      <div id="achievements-grid" class="achievements-grid" role="list" aria-label="成就列表">
+        <!-- 由 JS 动态渲染 -->
+      </div>
+    </section>
+    
+    <!-- 怪兽页面 -->
+    <section id="page-monsters" class="page galaxy-map" role="region" aria-labelledby="monsters-heading">
+      <header class="map-header">
+        <h1 id="monsters-heading" class="map-title font-title">怪兽图鉴</h1>
+        <p style="color: #c7d2fe; margin-top: 0.5rem;">发现并净化学习中的错误怪兽！</p>
+      </header>
+      
+      <div id="monster-grid" class="monster-grid" role="list" aria-label="怪兽列表">
+        <!-- 由 JS 动态渲染 -->
+      </div>
+    </section>
+    
+    <!-- 个人档案页面 -->
+    <section id="page-profile" class="page galaxy-map" role="region" aria-labelledby="profile-heading">
+      <header class="map-header">
+        <h1 id="profile-heading" class="map-title font-title">能力档案</h1>
+        <p style="color: #c7d2fe; margin-top: 0.5rem;">查看你的数学能力雷达图</p>
+      </header>
+      
+      <div style="max-width: 600px; margin: 0 auto;">
+        <canvas id="radarCanvas" width="500" height="500" aria-label="能力雷达图" role="img"></canvas>
+        
+        <div style="margin-top: 2rem; background: rgba(99, 102, 241, 0.2); border-radius: 20px; padding: 2rem;">
+          <h2 style="text-align: center; color: #fbbf24; margin-bottom: 1.5rem;">详细统计</h2>
+          
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <div style="background: rgba(0, 0, 0, 0.3); padding: 1rem; border-radius: 12px;">
+              <div style="color: #c7d2fe; font-size: 0.9rem;">已学关卡</div>
+              <div style="color: #fbbf24; font-size: 1.5rem; font-weight: bold;"><span id="learned-count">0</span> / 12</div>
+            </div>
+            
+            <div style="background: rgba(0, 0, 0, 0.3); padding: 1rem; border-radius: 12px;">
+              <div style="color: #c7d2fe; font-size: 0.9rem;">跳过关卡</div>
+              <div style="color: #6b7280; font-size: 1.5rem; font-weight: bold;"><span id="skipped-count">0</span></div>
+            </div>
+            
+            <div style="background: rgba(0, 0, 0, 0.3); padding: 1rem; border-radius: 12px;">
+              <div style="color: #c7d2fe; font-size: 0.9rem;">当前称号</div>
+              <div style="color: #f472b6; font-size: 1.1rem; font-weight: bold;" id="title-display">算术见习生</div>
+            </div>
+          </div>
+          
+          <h3 style="color: #fbbf24; margin: 1.5rem 0 1rem;">能力值</h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem;">
+            <div style="background: rgba(0, 0, 0, 0.3); padding: 0.75rem; border-radius: 8px;">
+              <div style="color: #c7d2fe; font-size: 0.85rem;">计算爆发力</div>
+              <div style="color: #60a5fa; font-weight: bold;"><span id="stat-calc">30</span></div>
+            </div>
+            <div style="background: rgba(0, 0, 0, 0.3); padding: 0.75rem; border-radius: 8px;">
+              <div style="color: #c7d2fe; font-size: 0.85rem;">空间想象力</div>
+              <div style="color: #a78bfa; font-weight: bold;"><span id="stat-space">20</span></div>
+            </div>
+            <div style="background: rgba(0, 0, 0, 0.3); padding: 0.75rem; border-radius: 8px;">
+              <div style="color: #c7d2fe; font-size: 0.85rem;">逻辑推理力</div>
+              <div style="color: #fbbf24; font-weight: bold;"><span id="stat-logic">25</span></div>
+            </div>
+            <div style="background: rgba(0, 0, 0, 0.3); padding: 0.75rem; border-radius: 8px;">
+              <div style="color: #c7d2fe; font-size: 0.85rem;">逆向思维</div>
+              <div style="color: #f472b6; font-weight: bold;"><span id="stat-reverse">15</span></div>
+            </div>
+            <div style="background: rgba(0, 0, 0, 0.3); padding: 0.75rem; border-radius: 8px;">
+              <div style="color: #c7d2fe; font-size: 0.85rem;">抗挫折力</div>
+              <div style="color: #10b981; font-weight: bold;"><span id="stat-resist">40</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+  
+  <!-- 应用脚本（ES 模块） -->
+  <script type="module" src="./src/js/app.js"></script>
+</body>
+</html>
