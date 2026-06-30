@@ -1,0 +1,2130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数学星环 · 12天超能觉醒计划</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/ma-shan-zheng@5.0.18/index.css">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Ma Shan Zheng', 'Comic Sans MS', cursive, sans-serif;
+    background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+    min-height: 100vh;
+    color: #fff;
+    overflow-x: hidden;
+  }
+  .font-title { font-family: 'Ma Shan Zheng', cursive; }
+  .stars { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+  .star { position: absolute; background: white; border-radius: 50%; animation: twinkle 3s infinite; }
+  @keyframes twinkle { 0%, 100% { opacity: 0.3; transform: scale(1); } 50% { opacity: 1; transform: scale(1.3); } }
+  
+  #splash {
+    position: fixed; inset: 0;
+    background: radial-gradient(ellipse at center, #302b63 0%, #0f0c29 100%);
+    z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    transition: opacity 1s;
+  }
+  .splash-title {
+    font-size: clamp(2.5rem, 8vw, 5rem);
+    background: linear-gradient(45deg, #fbbf24, #f472b6, #a78bfa, #60a5fa);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 20px rgba(251, 191, 36, 0.3));
+  }
+  .spaceship-float { animation: float 3s ease-in-out infinite; }
+  @keyframes float { 0%, 100% { transform: translateY(0) rotate(-5deg); } 50% { transform: translateY(-20px) rotate(5deg); } }
+  .btn-start {
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+    padding: 1rem 3rem; border-radius: 9999px; font-size: 1.5rem; font-weight: bold;
+    color: white; border: none; cursor: pointer; box-shadow: 0 10px 30px rgba(239, 68, 68, 0.5);
+    animation: pulse 2s infinite; font-family: inherit;
+  }
+  @keyframes pulse { 0%, 100% { box-shadow: 0 10px 30px rgba(239, 68, 68, 0.5); } 50% { box-shadow: 0 10px 40px rgba(239, 68, 68, 0.8); } }
+  
+  #main-app { display: none; position: relative; z-index: 1; }
+  .top-nav {
+    background: rgba(15, 12, 41, 0.8); backdrop-filter: blur(20px);
+    border-bottom: 2px solid rgba(99, 102, 241, 0.3);
+    padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center;
+    position: sticky; top: 0; z-index: 100; flex-wrap: wrap; gap: 0.5rem;
+  }
+  .nav-brand {
+    display: flex; align-items: center; gap: 0.75rem; font-size: 1.5rem; font-weight: bold;
+    background: linear-gradient(45deg, #fbbf24, #f472b6);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .nav-stats { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+  .stat-item {
+    display: flex; align-items: center; gap: 0.5rem;
+    background: rgba(99, 102, 241, 0.2); padding: 0.5rem 1rem;
+    border-radius: 9999px; border: 1px solid rgba(99, 102, 241, 0.4);
+  }
+  .page { display: none; animation: fadeIn 0.5s; }
+  .page.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  
+  .galaxy-map { padding: 2rem; max-width: 1400px; margin: 0 auto; }
+  .map-header { text-align: center; margin-bottom: 3rem; }
+  .map-title {
+    font-size: 3rem;
+    background: linear-gradient(45deg, #60a5fa, #a78bfa, #f472b6);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .galaxy-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; padding: 1rem; }
+  .galaxy-card {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2));
+    border: 2px solid rgba(99, 102, 241, 0.4); border-radius: 20px; padding: 1.5rem;
+    cursor: pointer; transition: all 0.3s; position: relative; overflow: hidden;
+  }
+  .galaxy-card:hover:not(.locked) { transform: translateY(-8px) scale(1.02); border-color: #fbbf24; box-shadow: 0 20px 40px rgba(251, 191, 36, 0.3); }
+  .galaxy-card.locked { opacity: 0.5; cursor: not-allowed; filter: grayscale(0.5); }
+  .galaxy-card.completed { border-color: #10b981; background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(52, 211, 153, 0.2)); }
+  .galaxy-card.skipped { border-color: #6b7280; background: linear-gradient(135deg, rgba(107, 114, 128, 0.2), rgba(75, 85, 99, 0.2)); }
+  .galaxy-number {
+    position: absolute; top: 1rem; right: 1rem;
+    background: rgba(251, 191, 36, 0.3); width: 40px; height: 40px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem;
+    border: 2px solid #fbbf24;
+  }
+  .galaxy-icon { font-size: 4rem; text-align: center; margin-bottom: 1rem; }
+  .galaxy-name { font-size: 1.5rem; text-align: center; margin-bottom: 0.5rem; color: #fbbf24; }
+  .galaxy-topic { text-align: center; color: #c7d2fe; font-size: 0.95rem; margin-bottom: 1rem; }
+  .galaxy-progress { height: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 4px; overflow: hidden; }
+  .galaxy-progress-bar { height: 100%; background: linear-gradient(90deg, #fbbf24, #f472b6); transition: width 0.5s; }
+  
+  .learning-page { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+  .back-btn {
+    background: rgba(99, 102, 241, 0.3); border: 2px solid rgba(99, 102, 241, 0.6);
+    color: white; padding: 0.5rem 1.5rem; border-radius: 9999px; cursor: pointer;
+    margin-bottom: 2rem; font-family: inherit;
+  }
+  .story-card {
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.3), rgba(99, 102, 241, 0.3));
+    border: 2px solid rgba(168, 85, 247, 0.5); border-radius: 20px; padding: 2rem; margin-bottom: 2rem;
+  }
+  .npc-dialogue { display: flex; gap: 1.5rem; align-items: flex-start; }
+  .npc-avatar {
+    width: 80px; height: 80px; border-radius: 50%; border: 3px solid #fbbf24;
+    display: flex; align-items: center; justify-content: center; font-size: 2.5rem;
+    background: linear-gradient(135deg, #6366f1, #a855f7); flex-shrink: 0;
+  }
+  .dialogue-bubble { background: rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 1.5rem; flex: 1; }
+  .npc-name { color: #fbbf24; font-size: 1.2rem; margin-bottom: 0.5rem; }
+  
+  .game-area {
+    background: linear-gradient(135deg, rgba(15, 12, 41, 0.8), rgba(48, 43, 99, 0.8));
+    border: 3px solid rgba(251, 191, 36, 0.5); border-radius: 24px;
+    padding: 2rem; margin-bottom: 2rem; min-height: 400px;
+  }
+  .game-title { font-size: 2rem; text-align: center; color: #fbbf24; margin-bottom: 1rem; }
+  .game-progress-bar {
+    display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 1.5rem;
+  }
+  .game-progress-dot {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1); border: 2px solid rgba(255, 255, 255, 0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem; color: #c7d2fe; transition: all 0.3s;
+  }
+  .game-progress-dot.active { background: #fbbf24; border-color: #fbbf24; color: #0f0c29; font-weight: bold; }
+  .game-progress-dot.done { background: #10b981; border-color: #10b981; color: white; }
+  
+  .blackhole {
+    width: 200px; height: 200px; border-radius: 50%;
+    background: radial-gradient(circle, #000 0%, #1a0033 40%, #4c1d95 70%, transparent 100%);
+    box-shadow: 0 0 60px rgba(124, 58, 237, 0.8), inset 0 0 40px rgba(0, 0, 0, 0.8);
+    display: flex; align-items: center; justify-content: center;
+    position: relative; animation: rotate 10s linear infinite; margin: 0 auto;
+  }
+  .blackhole::before {
+    content: ''; position: absolute; inset: -20px; border-radius: 50%;
+    border: 3px solid rgba(168, 85, 247, 0.5); animation: pulse-ring 2s infinite;
+  }
+  @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  @keyframes pulse-ring { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.5; } }
+  
+  .slider-container { width: 100%; max-width: 500px; margin: 0 auto; }
+  .slider-label { display: flex; justify-content: space-between; margin-bottom: 0.5rem; color: #c7d2fe; }
+  input[type="range"] {
+    width: 100%; height: 12px; border-radius: 6px;
+    background: linear-gradient(90deg, #6366f1, #a855f7); outline: none; -webkit-appearance: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 30px; height: 30px; border-radius: 50%;
+    background: #fbbf24; cursor: pointer; box-shadow: 0 0 10px rgba(251, 191, 36, 0.8);
+  }
+  
+  .game-feedback {
+    padding: 1rem 2rem; border-radius: 12px; font-size: 1.1rem; text-align: center;
+    min-height: 60px; display: flex; align-items: center; justify-content: center; width: 100%;
+  }
+  .feedback-success { background: rgba(16, 185, 129, 0.3); border: 2px solid #10b981; color: #6ee7b7; }
+  .feedback-error { background: rgba(239, 68, 68, 0.3); border: 2px solid #ef4444; color: #fca5a5; }
+  .feedback-info { background: rgba(99, 102, 241, 0.3); border: 2px solid #6366f1; color: #c7d2fe; }
+  
+  .action-btn {
+    background: linear-gradient(135deg, #6366f1, #a855f7); color: white;
+    padding: 0.75rem 1.5rem; border-radius: 12px; border: none; cursor: pointer;
+    font-size: 1.05rem; transition: all 0.3s; font-family: inherit;
+  }
+  .action-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(99, 102, 241, 0.5); }
+  .action-btn.danger { background: linear-gradient(135deg, #ef4444, #f97316); }
+  .action-btn.success { background: linear-gradient(135deg, #10b981, #14b8a6); }
+  .action-btn.skip { background: linear-gradient(135deg, #6b7280, #4b5563); }
+  .action-btn.skip:hover { box-shadow: 0 10px 20px rgba(107, 114, 128, 0.5); }
+
+  /* 悬浮跳过按钮 */
+  .float-skip {
+    position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 100;
+    padding: 0.75rem 1.2rem; border-radius: 999px; border: none;
+    background: linear-gradient(135deg, #6b7280, #4b5563); color: white;
+    font-size: 0.95rem; cursor: pointer; font-family: inherit;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4); transition: all 0.3s;
+    display: flex; align-items: center; gap: 0.4rem;
+  }
+  .float-skip:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(107,114,128,0.5); }
+
+  /* 自定义模态弹窗 */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 999; display: flex;
+    align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+  }
+  .modal-box {
+    background: linear-gradient(135deg, #1e1b4b, #0f0f23);
+    border: 2px solid #6b7280; border-radius: 20px;
+    padding: 2rem 2.5rem; max-width: 420px; width: 90%;
+    text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  }
+  .modal-box h3 { margin: 0 0 0.5rem; font-size: 1.4rem; }
+  .modal-box p { color: #c7d2fe; line-height: 1.6; margin: 0.5rem 0 1.5rem; font-size: 0.95rem; }
+  .modal-actions { display: flex; gap: 1rem; justify-content: center; }
+  .modal-actions button { padding: 0.6rem 1.5rem; border-radius: 12px; border: none;
+    font-size: 1rem; cursor: pointer; font-family: inherit; transition: all 0.3s; }
+  .modal-actions button:hover { transform: translateY(-2px); }
+  .modal-actions .btn-cancel { background: #374151; color: #e5e7eb; }
+  .modal-actions .btn-confirm { background: linear-gradient(135deg, #6b7280, #4b5563); color: white; }
+  .action-buttons { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+  
+  .match-game { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 0.75rem; max-width: 600px; margin: 0 auto; }
+  .term-card {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.4), rgba(168, 85, 247, 0.4));
+    border: 2px solid rgba(168, 85, 247, 0.6); border-radius: 12px; padding: 1rem;
+    text-align: center; font-size: 1.2rem; cursor: pointer; transition: all 0.3s;
+    min-height: 70px; display: flex; align-items: center; justify-content: center;
+  }
+  .term-card:hover { transform: scale(1.05); border-color: #fbbf24; }
+  .term-card.selected { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #0f0c29; border-color: #fff; }
+  .term-card.matched { background: rgba(16, 185, 129, 0.3); border-color: #10b981; opacity: 0.5; pointer-events: none; }
+  
+  .pizza-container { display: flex; gap: 2rem; flex-wrap: wrap; justify-content: center; align-items: center; }
+  .pizza {
+    width: 200px; height: 200px; border-radius: 50%;
+    background: radial-gradient(circle, #fbbf24 30%, #f59e0b 100%);
+    position: relative; border: 4px solid #92400e;
+    box-shadow: 0 0 30px rgba(251, 191, 36, 0.5);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 3rem; font-weight: bold; color: #92400e;
+  }
+  
+  .bomb { font-size: 6rem; animation: bomb-shake 0.5s infinite; display: inline-block; }
+  @keyframes bomb-shake { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
+  .timer { font-size: 3rem; color: #ef4444; font-weight: bold; text-shadow: 0 0 20px rgba(239, 68, 68, 0.8); }
+  .wire {
+    display: inline-block; padding: 1rem 2rem; margin: 0.5rem; border-radius: 8px;
+    cursor: pointer; font-size: 1.2rem; font-weight: bold; transition: all 0.3s;
+    border: 3px solid; font-family: inherit; color: white;
+  }
+  .wire-red { background: #dc2626; border-color: #991b1b; }
+  .wire-blue { background: #2563eb; border-color: #1e40af; }
+  .wire:hover { transform: scale(1.1); box-shadow: 0 0 20px currentColor; }
+  
+  .angle-canvas { width: 100%; max-width: 500px; height: 350px; background: rgba(0, 0, 0, 0.3); border-radius: 12px; margin: 0 auto; display: block; }
+  .angle-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem; margin-top: 1rem; }
+  .angle-option {
+    background: rgba(99, 102, 241, 0.3); border: 2px solid rgba(99, 102, 241, 0.6);
+    padding: 1rem; border-radius: 12px; text-align: center; cursor: pointer;
+    transition: all 0.3s; font-size: 1.1rem; font-family: inherit; color: white;
+  }
+  .angle-option:hover { background: rgba(251, 191, 36, 0.3); border-color: #fbbf24; }
+  
+  .condition-item {
+    padding: 0.75rem; margin-bottom: 0.5rem; background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px; cursor: pointer; transition: all 0.3s;
+  }
+  .condition-item:hover { background: rgba(251, 191, 36, 0.3); }
+  .condition-item.selected { background: rgba(251, 191, 36, 0.5); border: 2px solid #fbbf24; }
+  
+  .quad-evolution { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; }
+  .quad-display { width: 250px; height: 250px; background: rgba(0, 0, 0, 0.3); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+  .condition-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; width: 100%; max-width: 700px; }
+  .cond-btn {
+    background: rgba(99, 102, 241, 0.3); border: 2px solid rgba(99, 102, 241, 0.6);
+    padding: 0.75rem; border-radius: 12px; cursor: pointer; transition: all 0.3s;
+    color: white; font-family: inherit; font-size: 1rem;
+  }
+  .cond-btn:hover { background: rgba(251, 191, 36, 0.3); border-color: #fbbf24; }
+  
+  .room { width: 100%; max-width: 500px; height: 300px; margin: 0 auto; background: rgba(0, 0, 0, 0.3); border-radius: 12px; position: relative; overflow: hidden; }
+  .door { position: absolute; right: 10%; top: 30%; width: 80px; height: 150px; background: linear-gradient(180deg, #92400e, #78350f); border: 3px solid #451a03; border-radius: 8px 8px 0 0; display: flex; align-items: center; justify-content: center; font-size: 2rem; }
+  .room-input {
+    background: rgba(255, 255, 255, 0.1); border: 2px solid #fbbf24;
+    padding: 0.75rem 1.5rem; border-radius: 12px; color: white; font-size: 1.5rem;
+    text-align: center; width: 150px; font-family: inherit;
+  }
+  
+  .circle-canvas { width: 100%; max-width: 400px; height: 400px; margin: 0 auto; background: rgba(0, 0, 0, 0.3); border-radius: 12px; display: block; }
+  
+  .func-match { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+  .func-list, .graph-list { display: flex; flex-direction: column; gap: 0.75rem; }
+  .func-item, .graph-item {
+    background: rgba(99, 102, 241, 0.3); border: 2px solid rgba(99, 102, 241, 0.6);
+    padding: 1rem; border-radius: 12px; cursor: pointer; transition: all 0.3s; text-align: center;
+  }
+  .func-item:hover, .graph-item:hover { background: rgba(251, 191, 36, 0.3); border-color: #fbbf24; }
+  .func-item.selected, .graph-item.selected { background: rgba(251, 191, 36, 0.5); border-color: #fbbf24; }
+  .func-item.matched, .graph-item.matched { background: rgba(16, 185, 129, 0.3); border-color: #10b981; pointer-events: none; }
+  
+  .parabola-canvas { width: 100%; height: 300px; background: rgba(0, 0, 0, 0.3); border-radius: 12px; border: 2px solid rgba(251, 191, 36, 0.5); position: relative; overflow: hidden; }
+  .sliders-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem; }
+  .slider-item { background: rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 12px; }
+  .slider-item label { display: block; margin-bottom: 0.5rem; color: #fbbf24; font-size: 1.1rem; }
+  
+  .knowledge-card { background: rgba(99, 102, 241, 0.15); border-left: 4px solid #fbbf24; padding: 1.5rem; border-radius: 12px; margin-bottom: 1rem; }
+  .knowledge-card h3 { color: #fbbf24; margin-bottom: 0.5rem; font-size: 1.3rem; }
+  .hint-badge { display: inline-block; background: rgba(251, 191, 36, 0.3); color: #fbbf24; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.85rem; margin-right: 0.5rem; }
+  .section-title { font-size: 2rem; color: #fbbf24; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.75rem; }
+  /* 视频列表样式 */
+  .video-section { margin-top: 1.5rem; }
+  .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.5rem; margin-top: 0.5rem; }
+  .video-link {
+    display: flex; align-items: center; gap: 0.4rem;
+    background: rgba(167, 139, 250, 0.12); border: 1px solid rgba(167, 139, 250, 0.25);
+    border-radius: 10px; padding: 0.6rem 0.8rem;
+    color: #e0e7ff; text-decoration: none; font-size: 0.85rem;
+    transition: all 0.2s;
+  }
+  .video-link:hover {
+    background: rgba(167, 139, 250, 0.25); border-color: #a78bfa;
+    transform: translateY(-2px); box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3);
+  }
+  .video-link .play-icon { font-size: 1.1rem; flex-shrink: 0; }
+  .video-link .vid-title { flex: 1; line-height: 1.3; }
+  
+  .achievements-page, .profile-page { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+  .achievements-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
+  .achievement-card {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.2));
+    border: 2px solid rgba(251, 191, 36, 0.5); border-radius: 20px; padding: 1.5rem;
+    text-align: center; transition: all 0.3s;
+  }
+  .achievement-card.locked { opacity: 0.4; filter: grayscale(1); }
+  .achievement-card:hover:not(.locked) { transform: scale(1.05); }
+  .achievement-icon { font-size: 3rem; margin-bottom: 0.5rem; }
+  .achievement-name { font-size: 1.3rem; color: #fbbf24; margin-bottom: 0.5rem; }
+  
+  .monster-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-top: 2rem; }
+  .monster-card {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(168, 85, 247, 0.2));
+    border: 2px solid rgba(239, 68, 68, 0.5); border-radius: 16px; padding: 1rem;
+    text-align: center; transition: all 0.3s;
+  }
+  .monster-card.purified { border-color: #10b981; background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(52, 211, 153, 0.2)); }
+  
+  .profile-header {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(168, 85, 247, 0.3));
+    border: 2px solid rgba(99, 102, 241, 0.5); border-radius: 24px; padding: 2rem;
+    display: flex; gap: 2rem; align-items: center; flex-wrap: wrap;
+  }
+  .avatar-circle {
+    width: 120px; height: 120px; border-radius: 50%;
+    background: linear-gradient(135deg, #fbbf24, #f472b6);
+    display: flex; align-items: center; justify-content: center; font-size: 3rem;
+    border: 4px solid white; box-shadow: 0 0 30px rgba(251, 191, 36, 0.5);
+  }
+  .radar-chart { width: 100%; max-width: 400px; height: 300px; margin: 2rem auto; }
+  
+  .nav-btn {
+    background: none; border: none; color: #c7d2fe; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 0.25rem;
+    font-family: inherit; transition: color 0.3s;
+  }
+  .nav-btn:hover { color: #fbbf24; }
+  
+  /* ===== 左侧节点地图 ===== */
+  .learn-layout { display: flex; gap: 2rem; align-items: flex-start; }
+  .node-map {
+    position: sticky; top: 2rem; flex-shrink: 0;
+    display: flex; flex-direction: column; align-items: center;
+    background: rgba(15, 12, 41, 0.6); border-radius: 20px;
+    padding: 1.5rem 0.75rem; border: 1px solid rgba(99, 102, 241, 0.3);
+  }
+  .node-item {
+    width: 64px; display: flex; flex-direction: column; align-items: center;
+    cursor: pointer; transition: all 0.3s; padding: 6px 2px;
+    border-radius: 12px; text-decoration: none; position: relative;
+  }
+  .node-item:hover { background: rgba(255,255,255,0.05); }
+  .node-dot {
+    width: 40px; height: 40px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; font-weight: bold; position: relative;
+    background: rgba(255,255,255,0.06); border: 2px solid rgba(255,255,255,0.15);
+    transition: all 0.3s;
+  }
+  .node-line {
+    width: 2px; height: 16px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+    flex-shrink: 0;
+  }
+  .node-item.current .node-dot {
+    background: rgba(251,191,36,0.2); border-color: #fbbf24;
+    box-shadow: 0 0 12px rgba(251,191,36,0.4);
+  }
+  .node-item.current .node-label { color: #fbbf24; }
+  .node-item.completed .node-dot {
+    background: rgba(16,185,129,0.2); border-color: #10b981;
+    color: #6ee7b7;
+  }
+  .node-item.completed .node-label { color: #6ee7b7; }
+  .node-item.skipped .node-dot {
+    background: rgba(107,114,128,0.15); border-color: #6b7280;
+    color: #9ca3af;
+  }
+  .node-item.skipped .node-label { color: #9ca3af; }
+  .node-item.locked { opacity: 0.35; cursor: default; }
+  .node-item.locked .node-label { color: #6b7280; }
+  .node-label { font-size: 0.6rem; margin-top: 3px; color: #c7d2fe; text-align: center; line-height: 1.2; }
+  .node-check { position: absolute; top: -4px; right: -4px; font-size: 0.7rem; }
+  .learn-right { flex: 1; min-width: 0; }
+
+  @media (max-width: 768px) {
+    .learn-layout { flex-direction: column; }
+    .node-map {
+      flex-direction: row; overflow-x: auto; position: static;
+      padding: 0.75rem; gap: 0; width: 100%;
+      border-radius: 16px;
+    }
+    .node-item { width: 50px; flex-shrink: 0; }
+    .node-dot { width: 32px; height: 32px; font-size: 0.9rem; }
+    .node-line { width: 12px; height: 2px; flex-shrink: 0; }
+    .node-label { display: none; }
+    .profile-header { flex-direction: column; text-align: center; }
+    .func-match { grid-template-columns: 1fr; }
+    .pizza-container { flex-direction: column; }
+  }
+  
+  ::-webkit-scrollbar { width: 10px; }
+  ::-webkit-scrollbar-track { background: rgba(15, 12, 41, 0.5); }
+  ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #6366f1, #a855f7); border-radius: 5px; }
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+
+<div id="splash">
+  <div class="spaceship-float" style="font-size: 8rem; margin-bottom: 2rem;">🚀</div>
+  <h1 class="splash-title font-title">数学星环</h1>
+  <p style="font-size: 1.5rem; color: #c7d2fe; margin-bottom: 0.5rem;">12天超能觉醒计划</p>
+  <p style="color: #a5b4fc; margin-bottom: 2rem; font-size: 1.1rem;">驾驶欧几里得号，收集12块数学原石！</p>
+  <button class="btn-start" onclick="startGame()">🚀 启动飞船</button>
+</div>
+
+<div id="main-app">
+  <nav class="top-nav">
+    <div class="nav-brand"><span style="font-size: 1.8rem;">🌌</span><span>数学星环</span></div>
+    <div class="nav-stats">
+      <div class="stat-item"><span style="font-size: 1.3rem;">💰</span><span id="coin-count" style="color: #fbbf24; font-weight: bold;">100</span></div>
+      <div class="stat-item"><span style="font-size: 1.3rem;">⭐</span><span id="star-count" style="color: #fbbf24; font-weight: bold;">0</span></div>
+      <div class="stat-item"><span style="font-size: 1.3rem;">🏆</span><span id="title-display" style="color: #a78bfa;">算术见习生</span></div>
+    </div>
+  </nav>
+
+  <div class="page active" id="page-map">
+    <div class="galaxy-map">
+      <div class="map-header">
+        <h1 class="map-title font-title">🌌 12星系冒险地图</h1>
+        <p style="color: #a5b4fc; font-size: 1.2rem;">点击星系进入探险，收集数学原石！遇到难题可暂时跳过哦~</p>
+      </div>
+      <div class="galaxy-grid" id="galaxy-grid"></div>
+    </div>
+  </div>
+
+  <div class="page" id="page-learn">
+    <div class="learning-page">
+      <button class="back-btn" onclick="showPage('map')">← 返回地图</button>
+      <div id="learn-content"></div>
+    </div>
+  </div>
+
+  <div class="page" id="page-achievements">
+    <div class="achievements-page">
+      <h1 class="section-title">🏆 成就殿堂</h1>
+      <div class="achievements-grid" id="achievements-grid"></div>
+      <h1 class="section-title" style="margin-top: 3rem;">👾 错题怪兽图鉴</h1>
+      <p style="color: #a5b4fc; margin-bottom: 1rem;">做错的题会变成小怪兽，复习可以净化它们！</p>
+      <div class="monster-grid" id="monster-grid"></div>
+    </div>
+  </div>
+
+  <div class="page" id="page-profile">
+    <div class="profile-page">
+      <div class="profile-header">
+        <div class="avatar-circle">🧑‍🚀</div>
+        <div style="flex: 1; min-width: 250px;">
+          <h2 style="font-size: 2rem; color: #fbbf24;">小勇士</h2>
+          <p style="color: #c7d2fe; margin-bottom: 1rem;">等级：<span id="player-level">1</span> · 经验值：<span id="player-exp">0</span>/100</p>
+          <div style="height: 12px; background: rgba(255,255,255,0.1); border-radius: 6px; overflow: hidden;">
+            <div id="exp-bar" style="height: 100%; width: 0%; background: linear-gradient(90deg, #fbbf24, #f472b6); transition: width 0.5s;"></div>
+          </div>
+          <div style="margin-top: 1rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+            <div class="stat-item"><span>🌠 已学星系</span><span id="learned-count" style="color: #fbbf24; font-weight: bold;">0</span>/12</div>
+            <div class="stat-item"><span>🎯 挑战成功</span><span id="challenge-count" style="color: #fbbf24; font-weight: bold;">0</span></div>
+            <div class="stat-item"><span>⏭️ 已跳过</span><span id="skipped-count" style="color: #9ca3af; font-weight: bold;">0</span></div>
+          </div>
+        </div>
+      </div>
+      <h2 class="section-title" style="margin-top: 2rem;">📊 五维能力雷达</h2>
+      <div class="radar-chart"><canvas id="radarCanvas" width="400" height="300"></canvas></div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 2rem;">
+        <div class="knowledge-card"><h3>🧮 计算爆发力</h3><p style="color: #c7d2fe;">快速准确地进行数学计算的能力</p><div style="margin-top: 0.5rem; color: #fbbf24;">当前：<span id="stat-calc">30</span>/100</div></div>
+        <div class="knowledge-card"><h3>📐 空间想象力</h3><p style="color: #c7d2fe;">理解和操作几何图形的能力</p><div style="margin-top: 0.5rem; color: #fbbf24;">当前：<span id="stat-space">20</span>/100</div></div>
+        <div class="knowledge-card"><h3>🔍 逻辑推理力</h3><p style="color: #c7d2fe;">通过已知条件推导结论的能力</p><div style="margin-top: 0.5rem; color: #fbbf24;">当前：<span id="stat-logic">25</span>/100</div></div>
+        <div class="knowledge-card"><h3>🔄 逆向思维</h3><p style="color: #c7d2fe;">从结果反推原因的能力</p><div style="margin-top: 0.5rem; color: #fbbf24;">当前：<span id="stat-reverse">15</span>/100</div></div>
+        <div class="knowledge-card"><h3>💪 抗挫折力</h3><p style="color: #c7d2fe;">面对困难坚持不懈的能力</p><div style="margin-top: 0.5rem; color: #fbbf24;">当前：<span id="stat-resist">40</span>/100</div></div>
+      </div>
+    </div>
+  </div>
+
+  <nav style="position: fixed; bottom: 0; left: 0; right: 0; background: rgba(15, 12, 41, 0.95); backdrop-filter: blur(20px); border-top: 2px solid rgba(99, 102, 241, 0.3); padding: 0.75rem; display: flex; justify-content: space-around; z-index: 100;">
+    <button onclick="showPage('map')" class="nav-btn" data-page="map"><span style="font-size: 1.5rem;">🌌</span><span style="font-size: 0.8rem;">星系地图</span></button>
+    <button onclick="showPage('achievements')" class="nav-btn" data-page="achievements"><span style="font-size: 1.5rem;">🏆</span><span style="font-size: 0.8rem;">成就</span></button>
+    <button onclick="showPage('profile')" class="nav-btn" data-page="profile"><span style="font-size: 1.5rem;">👤</span><span style="font-size: 0.8rem;">我的</span></button>
+  </nav>
+</div>
+
+<script>
+// ============ 数据定义 ============
+const GALAXIES = [
+  { id: 1, name: '实数黑洞', topic: '实数 · 数轴 · 绝对值', icon: '🕳️', type: 'algebra', npc: 'gauss' },
+  { id: 2, name: '代数星云', topic: '代数式 · 单项式 · 多项式', icon: '☁️', type: 'algebra', npc: 'gauss' },
+  { id: 3, name: '分式迷宫', topic: '分式 · 二次根式', icon: '🌀', type: 'algebra', npc: 'gauss' },
+  { id: 4, name: '天平侦探局', topic: '方程与不等式', icon: '⚖️', type: 'algebra', npc: 'gauss' },
+  { id: 5, name: '方程火山', topic: '一元二次方程', icon: '🌋', type: 'algebra', npc: 'gauss' },
+  { id: 6, name: '线条宇宙', topic: '几何初步 · 线 · 角', icon: '📏', type: 'geometry', npc: 'owl' },
+  { id: 7, name: '镜像克隆工厂', topic: '全等三角形', icon: '🔺', type: 'geometry', npc: 'owl' },
+  { id: 8, name: '四边形迷宫', topic: '平行四边形 · 矩形 · 菱形', icon: '🔷', type: 'geometry', npc: 'owl' },
+  { id: 9, name: '计算几何星', topic: '勾股定理 · 相似三角形', icon: '📐', type: 'geometry', npc: 'owl' },
+  { id: 10, name: '圆环星', topic: '圆的性质 · 垂径定理', icon: '⭕', type: 'geometry', npc: 'owl' },
+  { id: 11, name: '函数轨道', topic: '一次函数 · 反比例函数', icon: '📈', type: 'algebra', npc: 'gauss' },
+  { id: 12, name: '终极弹道星', topic: '二次函数 · 抛物线', icon: '🎯', type: 'algebra', npc: 'gauss' }
+];
+
+// B站配套视频（来源：https://space.bilibili.com/379905321/lists/8313920）
+const BILIBILI_VIDEOS = {
+  1: [
+    { bv: 'BV1u6E96nEBZ', title: '有理数' },
+    { bv: 'BV1DBE96DEsW', title: '数轴' },
+    { bv: 'BV1rdE96uEyS', title: '相反数与倒数' },
+    { bv: 'BV1kdE96uEgN', title: '绝对值' },
+    { bv: 'BV1k9E966Etb', title: '有理数的加减' },
+    { bv: 'BV1k9E966ErJ', title: '有理数的加减（例题篇）' },
+    { bv: 'BV1k9E966ExU', title: '有理数的乘除' },
+    { bv: 'BV11SE96VEKQ', title: '有理数的乘方' },
+    { bv: 'BV1ySE96VEnL', title: '有理数的混合运算' },
+    { bv: 'BV1NmE961Efp', title: '科学记数法' },
+    { bv: 'BV127Eq6cEct', title: '平方根' },
+    { bv: 'BV1iqEq67EPj', title: '立方根' },
+    { bv: 'BV1qvEq6UEs3', title: '实数' }
+  ],
+  2: [
+    { bv: 'BV1ntEq6sErT', title: '单项式' },
+    { bv: 'BV1HxEq6dEgW', title: '多项式' },
+    { bv: 'BV1rxEq6REV4', title: '整式的加减' },
+    { bv: 'BV1fhEq6HExh', title: '幂的运算' },
+    { bv: 'BV1FbEq69EFE', title: '整式的乘法' },
+    { bv: 'BV1RoEi6yE1z', title: '乘法公式' },
+    { bv: 'BV19FEq6kEgd', title: '因式分解' }
+  ],
+  3: [
+    { bv: 'BV19fEi6VEzR', title: '分式的概念' },
+    { bv: 'BV1ZDEi6UEZJ', title: '分式的基本性质' },
+    { bv: 'BV1fSEi6JE6p', title: '分式的运算' },
+    { bv: 'BV1fSEi6JEWS', title: '二次根式的概念和性质' },
+    { bv: 'BV1o9Ei62EtN', title: '二次根式的乘除' },
+    { bv: 'BV1SuEq6iEPq', title: '二次根式的加减' }
+  ],
+  4: [
+    { bv: 'BV1gMEq6MEjz', title: '一元一次方程' },
+    { bv: 'BV1tGEq6YEwq', title: '二元一次方程（组）' },
+    { bv: 'BV1U3Eq6NE7T', title: '一元一次不等式（组）的解法' },
+    { bv: 'BV1QAEq66EXP', title: '分式方程' }
+  ],
+  5: [
+    { bv: 'BV1XwEq63Erh', title: '一元二次方程的概念' },
+    { bv: 'BV1DKEq6BE7D', title: '直接开平方法' },
+    { bv: 'BV1QTLX6GEqe', title: '配方法解一元二次方程' },
+    { bv: 'BV13TLX6VErh', title: '公式解一元二次方程' },
+    { bv: 'BV1GTLX6VEic', title: '因式分解法解一元二次方程' },
+    { bv: 'BV1XNLX6CEk4', title: '韦达定理（根系关系）' }
+  ],
+  6: [
+    { bv: 'BV1PkjA6FEsN', title: '几何的基本元素——点和线' },
+    { bv: 'BV1PkjA6FEva', title: '几何的基本元素——角' },
+    { bv: 'BV1CrjA6fEQR', title: '相交线（上）' }
+  ]
+};
+
+const ACHIEVEMENTS = [
+  { id: 'novice', name: '算术见习生', icon: '🌱', desc: '完成第1-4讲', condition: 4 },
+  { id: 'algebra', name: '代数小能手', icon: '🔢', desc: '完成第1-5讲', condition: 5 },
+  { id: 'geometry', name: '几何炼金术士', icon: '📐', desc: '完成第6-9讲', condition: 9 },
+  { id: 'master', name: '欧几里得传人', icon: '👑', desc: '通关全部12讲', condition: 12 },
+  { id: 'coins100', name: '逻辑币收藏家', icon: '💰', desc: '累计获得200逻辑币', condition: 200, type: 'coins' }
+];
+
+const MONSTERS = [
+  { id: 'careless', name: '粗心大意兽', icon: '😵', desc: '忘记变号的捣蛋鬼' },
+  { id: 'sign', name: '符号看错怪', icon: '👻', desc: '把+看成-的小恶魔' },
+  { id: 'formula', name: '公式混淆虫', icon: '🐛', desc: '记错乘法公式' },
+  { id: 'calc', name: '计算失误怪', icon: '🦠', desc: '加减乘除算错' },
+  { id: 'concept', name: '概念模糊兽', icon: '🌫️', desc: '分不清有理数无理数' },
+  { id: 'angle', name: '角度混淆怪', icon: '📐', desc: '分不清同位角内错角' },
+  { id: 'shape', name: '形状认错虫', icon: '🔷', desc: '四边形判定搞混' }
+];
+
+let gameState = {
+  coins: 100, stars: 0, level: 1, exp: 0,
+  completed: [], skipped: [], currentGalaxy: null, monsters: [],
+  stats: { calc: 30, space: 20, logic: 25, reverse: 15, resist: 40 }
+};
+
+// ============ 初始化 ============
+function init() {
+  createStars();
+  renderGalaxyMap();
+  renderAchievements();
+  renderMonsters();
+  updateStats();
+}
+
+function createStars() {
+  const c = document.getElementById('stars');
+  for (let i = 0; i < 100; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    s.style.left = Math.random() * 100 + '%';
+    s.style.top = Math.random() * 100 + '%';
+    const sz = Math.random() * 3 + 1;
+    s.style.width = sz + 'px'; s.style.height = sz + 'px';
+    s.style.animationDelay = Math.random() * 3 + 's';
+    c.appendChild(s);
+  }
+}
+
+function startGame() {
+  document.getElementById('splash').style.opacity = '0';
+  setTimeout(() => {
+    document.getElementById('splash').style.display = 'none';
+    document.getElementById('main-app').style.display = 'block';
+  }, 1000);
+}
+
+function showPage(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + pageId).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.style.color = btn.dataset.page === pageId ? '#fbbf24' : '#c7d2fe';
+  });
+  if (pageId === 'profile') drawRadarChart();
+  if (pageId !== 'learn') removeFloatingSkip();
+  window.scrollTo(0, 0);
+}
+
+// ============ 星系地图 ============
+function renderGalaxyMap() {
+  const grid = document.getElementById('galaxy-grid');
+  grid.innerHTML = GALAXIES.map(g => {
+    const isCompleted = gameState.completed.includes(g.id);
+    const isSkipped = gameState.skipped.includes(g.id);
+    const isLocked = g.id > 1 && !gameState.completed.includes(g.id - 1) && !gameState.skipped.includes(g.id - 1);
+    const progress = isCompleted ? 100 : (isSkipped ? 50 : (isLocked ? 0 : 30));
+    let statusHtml = '';
+    if (isLocked) statusHtml = '<div style="text-align: center; margin-top: 0.5rem; color: #ef4444;">🔒 需要完成上一星系</div>';
+    else if (isCompleted) statusHtml = '<div style="text-align: center; margin-top: 0.5rem; color: #10b981;">✅ 已完成</div>';
+    else if (isSkipped) statusHtml = '<div style="text-align: center; margin-top: 0.5rem; color: #9ca3af;">⏭️ 已跳过（可重玩）</div>';
+    
+    return `
+      <div class="galaxy-card ${isCompleted ? 'completed' : ''} ${isSkipped && !isCompleted ? 'skipped' : ''} ${isLocked ? 'locked' : ''}" 
+           onclick="${isLocked ? '' : `enterGalaxy(${g.id})`}">
+        <div class="galaxy-number">${g.id}</div>
+        <div class="galaxy-icon">${g.icon}</div>
+        <div class="galaxy-name">${g.name}</div>
+        <div class="galaxy-topic">${g.topic}</div>
+        <div class="galaxy-progress"><div class="galaxy-progress-bar" style="width: ${progress}%"></div></div>
+        ${statusHtml}
+      </div>
+    `;
+  }).join('');
+}
+
+function enterGalaxy(id) {
+  gameState.currentGalaxy = id;
+  const galaxy = GALAXIES.find(g => g.id === id);
+  renderLearningPage(galaxy);
+  showPage('learn');
+}
+
+// ============ 学习详情页（左侧节点地图 + 右侧知识游戏）============
+function renderLearningPage(galaxy) {
+  const currentId = galaxy.id;
+
+  // 构建左侧节点地图 HTML
+  let nodeHtml = '';
+  GALAXIES.forEach((g, idx) => {
+    const isCompleted = gameState.completed.includes(g.id);
+    const isSkipped = gameState.skipped.includes(g.id);
+    const isCurrent = g.id === currentId;
+    const isLocked = g.id > 1 && !gameState.completed.includes(g.id - 1) && !gameState.skipped.includes(g.id - 1);
+    let cls = '';
+    if (isCurrent) cls = 'current';
+    else if (isCompleted) cls = 'completed';
+    else if (isSkipped) cls = 'skipped';
+    else if (isLocked) cls = 'locked';
+
+    const checkMark = isCompleted ? '<span class="node-check">✅</span>' : '';
+    const shortName = g.name.length > 5 ? g.name.slice(0, 5) + '…' : g.name;
+
+    nodeHtml += `
+      <div class="node-item ${cls}" onclick="${isLocked ? '' : `enterGalaxy(${g.id})`}" title="${g.name}">
+        <div class="node-dot">${g.icon}${checkMark}</div>
+        <div class="node-label">${shortName}</div>
+      </div>`;
+    if (idx < GALAXIES.length - 1) {
+      nodeHtml += '<div class="node-line"></div>';
+    }
+  });
+
+  document.getElementById('learn-content').innerHTML = `
+    <div class="learn-layout">
+      <div class="node-map">${nodeHtml}</div>
+      <div class="learn-right">
+        <h2 style="font-size: 1.8rem; color: #fbbf24; margin-bottom: 0.3rem;">${galaxy.icon} ${galaxy.name}</h2>
+        <p style="color: #a5b4fc; margin-bottom: 1.5rem; font-size: 1rem;">${galaxy.topic}</p>
+        <h2 class="section-title">📚 知识宝典</h2>
+        ${getKnowledgeContent(galaxy.id)}
+        ${renderVideoLinks(galaxy.id)}
+        <h2 class="section-title" style="margin-top: 2rem;">🎮 互动挑战</h2>
+        <div class="game-area" id="game-area">
+          ${getGameContent(galaxy.id)}
+        </div>
+      </div>
+    </div>
+  `;
+
+  setTimeout(() => {
+    initGame(galaxy.id);
+    addFloatingSkip(galaxy.id);
+  }, 100);
+}
+
+function initGame(id) {
+  if (id === 2) initMatchGame();
+  if (id === 6) drawAngleHunter();
+  if (id === 8) initQuadEvolution();
+  if (id === 9) initRoomGame();
+  if (id === 10) drawCircleGame();
+  if (id === 11) initFuncMatch();
+  if (id === 12) updateParabola();
+}
+
+// ============ 游戏进度条 ============
+function renderGameProgress(current, total) {
+  let html = '<div class="game-progress-bar">';
+  for (let i = 1; i <= total; i++) {
+    let cls = '';
+    if (i < current) cls = 'done';
+    else if (i === current) cls = 'active';
+    html += `<div class="game-progress-dot ${cls}">${i < current ? '✓' : i}</div>`;
+  }
+  html += '</div>';
+  return html;
+}
+
+// ============ 游戏1：绝对值黑洞（3题）============
+let blackholeState = { round: 0 };
+const blackholeQuestions = [
+  { q: '|x - 2023| = 0', answer: 2023, min: 2000, max: 2050, hint: '绝对值等于0，里面必须是0！' },
+  { q: '|x + 5| = 3，求 x 的较小值', answer: -8, min: -15, max: 5, hint: 'x+5=3 或 x+5=-3，取较小的那个！' },
+  { q: '数轴上点A=-2，向右平移4个单位到B，B是？', answer: 2, min: -10, max: 10, hint: '向右平移就是加！-2+4=?' }
+];
+
+function renderBlackholeGame() {
+  blackholeState = { round: 0 };
+  return renderBlackholeQuestion();
+}
+
+function renderBlackholeQuestion() {
+  const q = blackholeQuestions[blackholeState.round];
+  return `
+    ${renderGameProgress(blackholeState.round + 1, blackholeQuestions.length)}
+    <div class="game-title">🕳️ 第${blackholeState.round + 1}题：绝对值黑洞逃生</div>
+    <p style="text-align: center; color: #c7d2fe; margin-bottom: 2rem;">${q.q}</p>
+    <div class="blackhole">
+      <span id="blackhole-value" style="color: #fbbf24; font-size: 1.3rem; z-index: 1;">|x| = ?</span>
+    </div>
+    <div class="slider-container" style="margin-top: 2rem;">
+      <div class="slider-label">
+        <span>调整坐标 x</span>
+        <span id="slider-value" style="color: #fbbf24; font-weight: bold;">${q.min}</span>
+      </div>
+      <input type="range" id="blackhole-slider" min="${q.min}" max="${q.max}" value="${q.min}" step="1" oninput="updateBlackhole(this.value)">
+    </div>
+    <div class="game-feedback feedback-info" id="blackhole-feedback">${q.hint}</div>
+    <div style="text-align: center; margin-top: 1rem;">
+      <button class="action-btn success" onclick="checkBlackhole()">🚀 确认坐标</button>
+    </div>
+  `;
+}
+
+function updateBlackhole(val) {
+  document.getElementById('slider-value').textContent = val;
+  document.getElementById('blackhole-value').textContent = `x = ${val}`;
+}
+
+function checkBlackhole() {
+  const val = parseInt(document.getElementById('blackhole-slider').value);
+  const q = blackholeQuestions[blackholeState.round];
+  const feedback = document.getElementById('blackhole-feedback');
+  if (val === q.answer) {
+    feedback.className = 'game-feedback feedback-success';
+    blackholeState.round++;
+    if (blackholeState.round >= blackholeQuestions.length) {
+      feedback.innerHTML = '🎉 全部通关！你已掌握绝对值的奥秘！+30逻辑币';
+      completeChallenge(1, 30);
+    } else {
+      feedback.innerHTML = `✨ 正确！进入下一关...`;
+      setTimeout(() => {
+        document.getElementById('game-area').innerHTML = renderBlackholeQuestion();
+      }, 1000);
+    }
+  } else {
+    feedback.className = 'game-feedback feedback-error';
+    const hint = val < q.answer ? 'x太小啦，往右拖！' : 'x太大啦，往左拖！';
+    feedback.innerHTML = `💥 飞船被弹飞！${hint}`;
+    addMonster('sign');
+  }
+}
+
+// ============ 游戏2：同类项消消乐（修复BUG）============
+let matchState = { selected: null, matchedCount: 0 };
+
+function renderMatchGame() {
+  matchState = { selected: null, matchedCount: 0 };
+  return `
+    <div class="game-title">☁️ 同类项消消乐</div>
+    <p style="text-align: center; color: #c7d2fe; margin-bottom: 1.5rem;">点击两个"同类项"（字母相同、指数也相同）配对消除！</p>
+    <div class="match-game" id="match-grid"></div>
+    <div class="game-feedback feedback-info" id="match-feedback" style="margin-top: 1.5rem;">已消除：<span id="match-count">0</span>/5 对</div>
+  `;
+}
+
+function initMatchGame() {
+  // 修复：确保每对同类项都有唯一标识符
+  const terms = [
+    { text: '3x²y', key: 'x2y_1' }, { text: '-5x²y', key: 'x2y_2' },
+    { text: '2ab²', key: 'ab2_1' }, { text: '7ab²', key: 'ab2_2' },
+    { text: '-4m³', key: 'm3_1' }, { text: 'm³', key: 'm3_2' },
+    { text: '½xy', key: 'xy_1' }, { text: '-2xy', key: 'xy_2' },
+    { text: '5a²b', key: 'a2b_1' }, { text: '-a²b', key: 'a2b_2' }
+  ];
+  for (let i = terms.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [terms[i], terms[j]] = [terms[j], terms[i]];
+  }
+  const grid = document.getElementById('match-grid');
+  if (!grid) return;
+  grid.innerHTML = terms.map((t, i) => `
+    <div class="term-card" data-key="${t.key.split('_')[0]}" data-original="${t.key}" onclick="selectTerm(this)">${t.text}</div>
+  `).join('');
+}
+
+function selectTerm(el) {
+  if (el.classList.contains('matched')) return;
+  if (matchState.selected === null) {
+    el.classList.add('selected');
+    matchState.selected = el;
+  } else if (matchState.selected === el) {
+    el.classList.remove('selected');
+    matchState.selected = null;
+  } else {
+    try {
+      const k1 = matchState.selected.dataset.key;
+      const k2 = el.dataset.key;
+      const original1 = matchState.selected.dataset.original;
+      const original2 = el.dataset.original;
+      const feedback = document.getElementById('match-feedback');
+
+      if (k1 === k2 && original1 !== original2) {
+        matchState.selected.classList.remove('selected');
+        matchState.selected.classList.add('matched');
+        el.classList.add('matched');
+        matchState.matchedCount++;
+        const countEl = document.getElementById('match-count');
+        if (countEl) countEl.textContent = matchState.matchedCount;
+        feedback.className = 'game-feedback feedback-success';
+        feedback.innerHTML = `✨ 配对成功！已消除：${matchState.matchedCount}/5 对`;
+        if (matchState.matchedCount === 5) {
+          feedback.innerHTML = '🎉 太棒了！所有同类项都消除了！+25逻辑币';
+          completeChallenge(2, 25);
+        }
+      } else {
+        feedback.className = 'game-feedback feedback-error';
+        feedback.innerHTML = `❌ 不是同类项！${matchState.selected.textContent} 和 ${el.textContent} 字母或指数不同。`;
+        matchState.selected.classList.remove('selected');
+        addMonster('concept');
+      }
+    } catch (e) {
+      console.error('selectTerm error:', e);
+    }
+    matchState.selected = null;
+  }
+}
+
+// ============ 游戏3：分式迷宫（3题）============
+let pizzaState = { round: 0 };
+const pizzaQuestions = [
+  { q: '1/2 + 1/3 的最简公分母是？', options: [5, 6, 8, 12], answer: 6, hint: '2和3的最小公倍数！' },
+  { q: '化简 x²/x = ？', options: ['x', 'x²', '1', '2x'], answer: 'x', hint: '约分：分子分母都除以x' },
+  { q: '√16 + √9 = ？', options: [5, 7, 25, 12], answer: 7, hint: '√16=4，√9=3，4+3=?' }
+];
+
+function renderPizzaGame() {
+  pizzaState = { round: 0 };
+  return renderPizzaQuestion();
+}
+
+function renderPizzaQuestion() {
+  const q = pizzaQuestions[pizzaState.round];
+  return `
+    ${renderGameProgress(pizzaState.round + 1, pizzaQuestions.length)}
+    <div class="game-title">🌀 第${pizzaState.round + 1}题：分式迷宫</div>
+    <p style="text-align: center; color: #c7d2fe; margin-bottom: 1.5rem; font-size: 1.3rem;">${q.q}</p>
+    <div style="text-align:center;margin-top:2rem;">
+      <div class="action-buttons">
+        ${q.options.map(opt => `<button class="action-btn" onclick="checkPizza('${opt}')">${opt}</button>`).join('')}
+      </div>
+    </div>
+    <div class="game-feedback feedback-info" id="pizza-feedback" style="margin-top:1.5rem;">💡 ${q.hint}</div>
+  `;
+}
+
+function checkPizza(ans) {
+  const q = pizzaQuestions[pizzaState.round];
+  const feedback = document.getElementById('pizza-feedback');
+  // 统一类型比较
+  const isCorrect = String(ans) === String(q.answer);
+  if (isCorrect) {
+    pizzaState.round++;
+    if (pizzaState.round >= pizzaQuestions.length) {
+      feedback.className = 'game-feedback feedback-success';
+      feedback.innerHTML = '🎉 全部通关！分式和根式难不倒你！+25逻辑币';
+      completeChallenge(3, 25);
+    } else {
+      feedback.className = 'game-feedback feedback-success';
+      feedback.innerHTML = '✨ 正确！进入下一关...';
+      setTimeout(() => {
+        document.getElementById('game-area').innerHTML = renderPizzaQuestion();
+      }, 1000);
+    }
+  } else {
+    feedback.className = 'game-feedback feedback-error';
+    feedback.innerHTML = `❌ 不对哦！再想想~ 💡 ${q.hint}`;
+    addMonster('calc');
+  }
+}
+
+// ============ 游戏4：天平解谜（2题）============
+let balanceState = { round: 0, steps: [] };
+const balanceQuestions = [
+  { left: '3x + 5', right: '2x + 9', answer: 4, steps: ['move2x', 'move5'] },
+  { left: '5x - 3', right: '2x + 9', answer: 4, steps: ['move2x', 'move3'] }
+];
+
+function renderBalanceGame() {
+  balanceState = { round: 0, steps: [] };
+  return renderBalanceQuestion();
+}
+
+function renderBalanceQuestion() {
+  const q = balanceQuestions[balanceState.round];
+  balanceState.steps = [];
+  return `
+    ${renderGameProgress(balanceState.round + 1, balanceQuestions.length)}
+    <div class="game-title">⚖️ 第${balanceState.round + 1}题：天平侦探局</div>
+    <div class="balance-game" style="display:flex;flex-direction:column;align-items:center;gap:1.5rem;">
+      <div class="equation-display" id="equation-display" style="font-size:1.8rem;text-align:center;padding:1rem;background:rgba(99,102,241,0.2);border-radius:12px;border:2px solid rgba(99,102,241,0.5);">${q.left} = ${q.right}</div>
+      <div style="display:flex;justify-content:space-around;width:100%;max-width:600px;position:relative;height:120px;">
+        <div style="background:rgba(251,191,36,0.2);border:2px solid #fbbf24;border-radius:0 0 20px 20px;padding:1rem;min-width:140px;text-align:center;" id="pan-left">${q.left}</div>
+        <div style="background:rgba(251,191,36,0.2);border:2px solid #fbbf24;border-radius:0 0 20px 20px;padding:1rem;min-width:140px;text-align:center;" id="pan-right">${q.right}</div>
+      </div>
+      <div class="action-buttons" id="balance-actions">
+        ${getBalanceButtons(balanceState.round)}
+      </div>
+      <div class="game-feedback feedback-info" id="balance-feedback">选择正确的移项操作！记住：移项要变号！</div>
+    </div>
+  `;
+}
+
+function getBalanceButtons(round) {
+  if (round === 0) {
+    return `
+      <button class="action-btn" onclick="balanceAction('move2x')">把 2x 移到左边（变 -2x）</button>
+      <button class="action-btn" onclick="balanceAction('move5')">把 5 移到右边（变 -5）</button>
+      <button class="action-btn danger" onclick="balanceAction('wrong')">把 3x 移到右边（不变号）❌</button>
+    `;
+  } else {
+    return `
+      <button class="action-btn" onclick="balanceAction('move2x')">把 2x 移到左边（变 -2x）</button>
+      <button class="action-btn" onclick="balanceAction('move3')">把 -3 移到右边（变 +3）</button>
+      <button class="action-btn danger" onclick="balanceAction('wrong')">把 5x 移到右边（不变号）❌</button>
+    `;
+  }
+}
+
+function balanceAction(action) {
+  const feedback = document.getElementById('balance-feedback');
+  const q = balanceQuestions[balanceState.round];
+  
+  if (action === 'wrong') {
+    feedback.className = 'game-feedback feedback-error';
+    feedback.innerHTML = '❌ 错误！移项必须变号！';
+    addMonster('careless');
+    return;
+  }
+  
+  balanceState.steps.push(action);
+  
+  if (balanceState.round === 0) {
+    if (action === 'move2x') {
+      document.getElementById('equation-display').textContent = '3x - 2x + 5 = 9';
+      document.getElementById('pan-left').innerHTML = '3x - 2x + 5';
+      document.getElementById('pan-right').innerHTML = '9';
+      feedback.className = 'game-feedback feedback-success';
+      feedback.innerHTML = '✅ 正确！继续操作...';
+    } else if (action === 'move5') {
+      if (balanceState.steps.includes('move2x')) {
+        document.getElementById('equation-display').textContent = 'x = 9 - 5 = 4';
+        document.getElementById('pan-left').innerHTML = '<span style="color:#fbbf24;font-size:1.5rem;">x = 4</span>';
+        document.getElementById('pan-right').innerHTML = '<span style="color:#fbbf24;font-size:1.5rem;">4</span>';
+        feedback.className = 'game-feedback feedback-success';
+        feedback.innerHTML = '🎉 天平平衡！x = 4！进入下一题...';
+        setTimeout(() => nextBalanceRound(), 1200);
+      } else {
+        feedback.className = 'game-feedback feedback-error';
+        feedback.innerHTML = '⚠️ 先处理x项再处理常数项哦！';
+        balanceState.steps.pop();
+      }
+    }
+  } else {
+    if (action === 'move2x') {
+      document.getElementById('equation-display').textContent = '5x - 2x - 3 = 9';
+      document.getElementById('pan-left').innerHTML = '5x - 2x - 3';
+      document.getElementById('pan-right').innerHTML = '9';
+      feedback.className = 'game-feedback feedback-success';
+      feedback.innerHTML = '✅ 正确！继续操作...';
+    } else if (action === 'move3') {
+      if (balanceState.steps.includes('move2x')) {
+        document.getElementById('equation-display').textContent = '3x = 9 + 3 = 12';
+        document.getElementById('pan-left').innerHTML = '<span style="color:#fbbf24;font-size:1.5rem;">3x = 12</span>';
+        document.getElementById('pan-right').innerHTML = '<span style="color:#fbbf24;font-size:1.5rem;">12</span>';
+        feedback.className = 'game-feedback feedback-success';
+        feedback.innerHTML = '🎉 解得 x = 4！进入下一题...';
+        setTimeout(() => nextBalanceRound(), 1200);
+      } else {
+        feedback.className = 'game-feedback feedback-error';
+        feedback.innerHTML = '⚠️ 先处理x项再处理常数项哦！';
+        balanceState.steps.pop();
+      }
+    }
+  }
+}
+
+function nextBalanceRound() {
+  balanceState.round++;
+  if (balanceState.round >= balanceQuestions.length) {
+    const feedback = document.getElementById('balance-feedback');
+    feedback.innerHTML = '🎉 全部通关！移项变号已掌握！+30逻辑币';
+    completeChallenge(4, 30);
+  } else {
+    document.getElementById('game-area').innerHTML = renderBalanceQuestion();
+  }
+}
+
+// ============ 游戏5：方程火山拆弹（2题）============
+let bombState = { round: 0, timeLeft: 30, interval: null, solved: false };
+const bombQuestions = [
+  { eq: 'x² - 5x + 6 = 0', roots: [2, 3], hint: '找两个数，乘积是6，和是5' },
+  { eq: 'x² - 9 = 0', roots: [3, -3], hint: 'x² = 9，x = ±?' }
+];
+let bombAnswers = { 1: null, 2: null };
+
+function renderBombGame() {
+  bombState = { round: 0, timeLeft: 30, interval: null, solved: false };
+  bombAnswers = { 1: null, 2: null };
+  return renderBombQuestion();
+}
+
+function renderBombQuestion() {
+  const q = bombQuestions[bombState.round];
+  bombState.timeLeft = 30;
+  bombState.solved = false;
+  bombAnswers = { 1: null, 2: null };
+  const options = bombState.round === 0 ? [1, 2, 3, 6] : [-3, -2, 2, 3, 9];
+  
+  return `
+    ${renderGameProgress(bombState.round + 1, bombQuestions.length)}
+    <div class="game-title">🌋 第${bombState.round + 1}题：方程火山拆弹</div>
+    <div style="text-align:center;">
+      <div class="bomb" id="bomb-icon">💣</div>
+      <div class="timer" id="bomb-timer">30</div>
+      <div style="background: rgba(99, 102, 241, 0.2); padding: 1rem; border-radius: 12px; margin: 1rem 0;">
+        <p style="color: #fbbf24; font-size: 1.5rem;">${q.eq}</p>
+        <p style="color: #c7d2fe; margin-top: 0.5rem;">💡 ${q.hint}</p>
+      </div>
+      <div>
+        <p style="color: #fbbf24; margin-bottom: 0.5rem;">选择第一个根 x₁：</p>
+        <div class="action-buttons" id="wire1-group">
+          ${options.map(o => `<button class="wire wire-red" onclick="selectWire(1, ${o})">x₁ = ${o}</button>`).join('')}
+        </div>
+      </div>
+      <div style="margin-top: 1rem;">
+        <p style="color: #fbbf24; margin-bottom: 0.5rem;">选择第二个根 x₂：</p>
+        <div class="action-buttons" id="wire2-group">
+          ${options.map(o => `<button class="wire wire-blue" onclick="selectWire(2, ${o})">x₂ = ${o}</button>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="game-feedback feedback-info" id="bomb-feedback" style="margin-top: 1rem;">因式分解：找两个根！</div>
+  `;
+}
+
+function startBombTimer() {
+  if (bombState.interval) clearInterval(bombState.interval);
+  bombState.interval = setInterval(() => {
+    if (bombState.solved) { clearInterval(bombState.interval); return; }
+    bombState.timeLeft--;
+    const timer = document.getElementById('bomb-timer');
+    if (timer) timer.textContent = bombState.timeLeft;
+    if (bombState.timeLeft <= 0) {
+      clearInterval(bombState.interval);
+      const feedback = document.getElementById('bomb-feedback');
+      const q = bombQuestions[bombState.round];
+      if (feedback && !bombState.solved) {
+        feedback.className = 'game-feedback feedback-error';
+        feedback.innerHTML = `💥 炸弹爆炸了！答案是 x₁=${q.roots[0]}, x₂=${q.roots[1]}`;
+        addMonster('formula');
+        setTimeout(() => nextBombRound(false), 2000);
+      }
+    }
+  }, 1000);
+}
+
+function selectWire(which, val) {
+  bombAnswers[which] = val;
+  const group = document.getElementById(`wire${which}-group`);
+  group.querySelectorAll('.wire').forEach(w => { w.style.opacity = '0.5'; w.style.boxShadow = 'none'; });
+  event.target.style.opacity = '1';
+  event.target.style.boxShadow = '0 0 30px currentColor';
+  
+  if (bombAnswers[1] !== null && bombAnswers[2] !== null) {
+    const feedback = document.getElementById('bomb-feedback');
+    const q = bombQuestions[bombState.round];
+    const a = bombAnswers[1], b = bombAnswers[2];
+    const correct = (a === q.roots[0] && b === q.roots[1]) || (a === q.roots[1] && b === q.roots[0]);
+    if (correct) {
+      bombState.solved = true;
+      clearInterval(bombState.interval);
+      feedback.className = 'game-feedback feedback-success';
+      feedback.innerHTML = `🎉 完美拆弹！x₁=${a}, x₂=${b}！`;
+      document.getElementById('bomb-icon').textContent = '✅';
+      setTimeout(() => nextBombRound(true), 1200);
+    } else {
+      feedback.className = 'game-feedback feedback-error';
+      feedback.innerHTML = `❌ 不对哦！再想想？`;
+      bombAnswers = { 1: null, 2: null };
+      document.querySelectorAll('.wire').forEach(w => { w.style.opacity = '1'; w.style.boxShadow = 'none'; });
+      addMonster('calc');
+    }
+  }
+}
+
+function nextBombRound(success) {
+  bombState.round++;
+  if (bombState.round >= bombQuestions.length) {
+    const feedback = document.getElementById('bomb-feedback');
+    feedback.innerHTML = '🎉 全部拆弹成功！因式分解大法已掌握！+35逻辑币';
+    completeChallenge(5, 35);
+  } else {
+    document.getElementById('game-area').innerHTML = renderBombQuestion();
+    startBombTimer();
+  }
+}
+
+// ============ 游戏6：角度猎人（3题）============
+let angleState = { round: 0, score: 0 };
+const angleQuestions = [
+  { q: '∠1 和 ∠5 是什么角？', a: '同位角', hint: '它们位置相同，都在上方右侧，是F形！' },
+  { q: '∠3 和 ∠6 是什么角？', a: '内错角', hint: '它们在两条直线之间，且交错位置，是Z形！' },
+  { q: '∠3 和 ∠5 是什么角？', a: '同旁内角', hint: '它们都在两条直线之间，且在同一侧，是U形！' }
+];
+
+function renderAngleHunter() {
+  angleState = { round: 0, score: 0 };
+  return `
+    <div class="game-title">📏 角度猎人</div>
+    <p style="text-align: center; color: #c7d2fe; margin-bottom: 1rem;">观察两条直线被第三条直线所截形成的角！</p>
+    <div style="text-align:center;color:#fbbf24;font-size:1.3rem;margin-bottom:1rem;">
+      第 <span id="angle-round">1</span>/3 题 · 得分：<span id="angle-score">0</span>
+    </div>
+    <canvas id="angleCanvas" class="angle-canvas" width="500" height="350"></canvas>
+    <p style="text-align:center;color:#fbbf24;font-size:1.3rem;margin-top:1rem;" id="angle-question">${angleQuestions[0].q}</p>
+    <div class="angle-options" id="angle-options">
+      <button class="angle-option" onclick="checkAngle('同位角')">同位角</button>
+      <button class="angle-option" onclick="checkAngle('内错角')">内错角</button>
+      <button class="angle-option" onclick="checkAngle('同旁内角')">同旁内角</button>
+      <button class="angle-option" onclick="checkAngle('对顶角')">对顶角</button>
+    </div>
+    <div class="game-feedback feedback-info" id="angle-feedback" style="margin-top:1rem;">💡 同位角(F形)、内错角(Z形)、同旁内角(U形)</div>
+  `;
+}
+
+function drawAngleHunter() {
+  const canvas = document.getElementById('angleCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, 500, 350);
+  ctx.strokeStyle = '#60a5fa'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(50, 120); ctx.lineTo(450, 120); ctx.moveTo(50, 230); ctx.lineTo(450, 230); ctx.stroke();
+  ctx.strokeStyle = '#fbbf24';
+  ctx.beginPath(); ctx.moveTo(150, 50); ctx.lineTo(350, 300); ctx.stroke();
+  ctx.fillStyle = '#fff'; ctx.font = 'bold 18px sans-serif';
+  const labels = [
+    { text: '∠1', x: 190, y: 110 }, { text: '∠2', x: 220, y: 140 },
+    { text: '∠3', x: 190, y: 160 }, { text: '∠4', x: 155, y: 140 },
+    { text: '∠5', x: 290, y: 220 }, { text: '∠6', x: 320, y: 250 },
+    { text: '∠7', x: 290, y: 270 }, { text: '∠8', x: 255, y: 250 }
+  ];
+  labels.forEach(l => ctx.fillText(l.text, l.x, l.y));
+}
+
+function checkAngle(ans) {
+  const q = angleQuestions[angleState.round];
+  const feedback = document.getElementById('angle-feedback');
+  if (ans === q.a) {
+    angleState.score++;
+    document.getElementById('angle-score').textContent = angleState.score;
+    feedback.className = 'game-feedback feedback-success';
+    feedback.innerHTML = `✅ 正确！${q.hint}`;
+    angleState.round++;
+    if (angleState.round >= angleQuestions.length) {
+      feedback.innerHTML = `🎉 全部答对！你是角度猎人！+30逻辑币`;
+      completeChallenge(6, 30);
+    } else {
+      document.getElementById('angle-round').textContent = angleState.round + 1;
+      document.getElementById('angle-question').textContent = angleQuestions[angleState.round].q;
+      setTimeout(() => { feedback.className = 'game-feedback feedback-info'; feedback.innerHTML = '继续观察图形...'; }, 1500);
+    }
+  } else {
+    feedback.className = 'game-feedback feedback-error';
+    feedback.innerHTML = `❌ 不对哦！记住：同位角(F形)、内错角(Z形)、同旁内角(U形)`;
+    addMonster('angle');
+  }
+}
+
+// ============ 游戏7：SSA克隆陷阱（2题）============
+let cloneState = { round: 0 };
+const cloneQuestions = [
+  { q: '选择可以判定三角形全等的条件（注意陷阱！）', trap: 'SSA', answer: ['SSS', 'SAS', 'ASA', 'AAS', 'HL'], reward: '完美盾牌' },
+  { q: '已知：AB=DE, BC=EF, ∠B=∠E，用哪个判定？', trap: null, answer: ['SAS'], reward: '克隆成功' }
+];
+
+function renderCloneGame() {
+  cloneState = { round: 0 };
+  return renderCloneQuestion();
+}
+
+function renderCloneQuestion() {
+  const q = cloneQuestions[cloneState.round];
+  const conditions = [
+    { id: 'SSS', text: '📏 SSS - 三边对应相等' },
+    { id: 'SAS', text: '📐 SAS - 两边及夹角' },
+    { id: 'ASA', text: '📊 ASA - 两角及夹边' },
+    { id: 'AAS', text: '🔢 AAS - 两角及对边' },
+    { id: 'SSA', text: '⚠️ SSA - 两边及对角（陷阱！）' },
+    { id: 'HL', text: '🔺 HL - 直角三角形斜边直角边' }
+  ];
+  
+  return `
+    ${renderGameProgress(cloneState.round + 1, cloneQuestions.length)}
+    <div class="game-title">🔺 第${cloneState.round + 1}题：镜像克隆工厂</div>
+    <p style="text-align: center; color: #c7d2fe; margin-bottom: 1.5rem;">${q.q}</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:center;">
+      <div style="background: rgba(0,0,0,0.3); border-radius: 12px; padding: 2rem; min-height: 250px; display: flex; align-items: center; justify-content: center;">
+        <svg width="200" height="200" viewBox="0 0 200 200">
+          <polygon points="30,170 170,170 100,30" fill="rgba(251, 191, 36, 0.3)" stroke="#fbbf24" stroke-width="3"/>
+          <text x="20" y="185" fill="#fbbf24" font-size="14">A</text>
+          <text x="175" y="185" fill="#fbbf24" font-size="14">B</text>
+          <text x="95" y="25" fill="#fbbf24" font-size="14">C</text>
+        </svg>
+      </div>
+      <div style="background: rgba(99, 102, 241, 0.2); padding: 1.5rem; border-radius: 12px;">
+        ${conditions.map(c => `
+          <div class="condition-item" onclick="selectCondition(this, '${c.id}')" ${c.id === 'SSA' ? 'style="border: 2px dashed #ef4444;"' : ''}>${c.text}</div>
+        `).join('')}
+      </div>
+    </div>
+    <div class="game-feedback feedback-info" id="clone-feedback" style="margin-top: 2rem;">点击选择正确的全等判定条件！</div>
+  `;
+}
+
+function selectCondition(el, condition) {
+  const q = cloneQuestions[cloneState.round];
+  const feedback = document.getElementById('clone-feedback');
+  
+  if (q.trap && condition === q.trap) {
+    feedback.className = 'game-feedback feedback-error';
+    feedback.innerHTML = `⚠️ 警告！${condition}基因不稳定，发生变异！产生了两个不同的三角形！<br><br>🎓 知识点：${condition}不能判定全等！`;
+    addMonster('concept');
+  } else if (q.answer.includes(condition)) {
+    feedback.className = 'game-feedback feedback-success';
+    feedback.innerHTML = `🎉 完美！${condition}可以判定全等！${q.reward}！`;
+    cloneState.round++;
+    if (cloneState.round >= cloneQuestions.length) {
+      feedback.innerHTML += '<br>+30逻辑币';
+      completeChallenge(7, 30);
+    } else {
+      setTimeout(() => { document.getElementById('game-area').innerHTML = renderCloneQuestion(); }, 1500);
+    }
+  } else {
+    feedback.className = 'game-feedback feedback-error';
+    feedback.innerHTML = `❌ 这个条件不适用于当前情况！`;
+  }
+}
+
+// ============ 游戏8：四边形进化论 ============
+let quadState = { stage: 0 };
+
+function renderQuadEvolution() {
+  quadState = { stage: 0 };
+  return `
+    <div class="game-title">🔷 四边形进化论</div>
+    <p style="text-align: center; color: #c7d2fe; margin-bottom: 1.5rem;">通过添加条件，让四边形一步步进化成最高级形态！</p>
+    <div class="quad-evolution">
+      <div style="text-align:center;">
+        <div style="font-size:1.3rem;color:#fbbf24;">当前形态：<span id="quad-name">普通四边形</span></div>
+        <div style="color:#c7d2fe;margin-top:0.5rem;">阶段 <span id="quad-stage">0</span>/3</div>
+      </div>
+      <div class="quad-display" id="quad-display">
+        <svg width="200" height="200" viewBox="0 0 200 200" id="quad-svg">
+          <polygon points="30,150 170,140 160,50 50,70" fill="rgba(99, 102, 241, 0.3)" stroke="#6366f1" stroke-width="3"/>
+        </svg>
+      </div>
+      <div class="condition-buttons" id="cond-buttons">
+        <button class="cond-btn" onclick="addCondition('两组对边平行')">两组对边分别平行</button>
+        <button class="cond-btn" onclick="addCondition('四个直角')">四个角都是直角</button>
+        <button class="cond-btn" onclick="addCondition('四条边相等')">四条边都相等</button>
+        <button class="cond-btn" onclick="addCondition('对角线相等')">对角线相等</button>
+        <button class="cond-btn" onclick="addCondition('对角线垂直')">对角线互相垂直</button>
+      </div>
+    </div>
+    <div class="game-feedback feedback-info" id="quad-feedback" style="margin-top:1.5rem;">第一步：添加条件让它变成平行四边形！</div>
+  `;
+}
+
+function initQuadEvolution() { quadState = { stage: 0 }; }
+
+function addCondition(cond) {
+  const feedback = document.getElementById('quad-feedback');
+  const nameEl = document.getElementById('quad-name');
+  const stageEl = document.getElementById('quad-stage');
+  const svg = document.getElementById('quad-svg');
+  
+  if (quadState.stage === 0 && cond === '两组对边平行') {
+    quadState.stage = 1; nameEl.textContent = '平行四边形'; stageEl.textContent = '1';
+    svg.innerHTML = '<polygon points="40,160 170,160 160,60 30,60" fill="rgba(99, 102, 241, 0.3)" stroke="#6366f1" stroke-width="3"/>';
+    feedback.className = 'game-feedback feedback-success';
+    feedback.innerHTML = '✨ 进化成平行四边形！下一步：让它变成矩形或菱形！';
+  } else if (quadState.stage === 1 && cond === '四个直角') {
+    quadState.stage = 2; nameEl.textContent = '矩形'; stageEl.textContent = '2';
+    svg.innerHTML = '<rect x="40" y="50" width="130" height="110" fill="rgba(251, 191, 36, 0.3)" stroke="#fbbf24" stroke-width="3"/>';
+    feedback.className = 'game-feedback feedback-success';
+    feedback.innerHTML = '✨ 进化成矩形！最后一步：让它变成正方形！';
+  } else if (quadState.stage === 1 && cond === '四条边相等') {
+    quadState.stage = 2; nameEl.textContent = '菱形'; stageEl.textContent = '2';
+    svg.innerHTML = '<polygon points="100,30 170,100 100,170 30,100" fill="rgba(244, 114, 182, 0.3)" stroke="#f472b6" stroke-width="3"/>';
+    feedback.className = 'game-feedback feedback-success';
+    feedback.innerHTML = '✨ 进化成菱形！最后一步：让它变成正方形！';
+  } else if (quadState.stage === 2 && (cond === '四条边相等' || cond === '四个直角')) {
+    quadState.stage = 3; nameEl.textContent = '正方形 👑'; stageEl.textContent = '3';
+    svg.innerHTML = '<rect x="50" y="50" width="110" height="110" fill="rgba(16, 185, 129, 0.3)" stroke="#10b981" stroke-width="4"/><text x="105" y="115" fill="#10b981" font-size="40" text-anchor="middle">★</text>';
+    feedback.className = 'game-feedback feedback-success';
+    feedback.innerHTML = '🎉 终极进化！正方形 = 矩形 + 菱形！+30逻辑币';
+    completeChallenge(8, 30);
+  } else {
+    feedback.className = 'game-feedback feedback-error';
+    if (quadState.stage === 0) feedback.innerHTML = '⚠️ 先添加"两组对边分别平行"变成平行四边形！';
+    else if (quadState.stage === 1) feedback.innerHTML = '⚠️ 加"四个直角"变矩形，加"四条边相等"变菱形！';
+    else feedback.innerHTML = '⚠️ 矩形加"四条边相等"或菱形加"四个直角"都能变正方形！';
+    addMonster('shape');
+  }
+}
+
+// ============ 游戏9：勾股密室（3关）============
+let roomState = { round: 0 };
+const roomQuestions = [
+  { a: 3, b: 4, c: 5 }, { a: 6, b: 8, c: 10 }, { a: 5, b: 12, c: 13 }
+];
+
+function renderRoomGame() {
+  roomState = { round: 0 };
+  return `
+    <div class="game-title">📐 勾股密室逃生</div>
+    <p style="text-align: center; color: #c7d2fe; margin-bottom: 1.5rem;">你被困在直角三角形房间里！算出斜边长度才能开门逃生！</p>
+    <div style="text-align:center;">
+      <div style="text-align:center;color:#fbbf24;font-size:1.3rem;margin-bottom:1rem;">第 <span id="room-round">1</span>/3 关</div>
+      <div class="room" id="room-display">
+        <svg width="100%" height="100%" viewBox="0 0 500 300" id="room-svg">
+          <polygon points="50,250 350,250 50,50" fill="rgba(99, 102, 241, 0.2)" stroke="#6366f1" stroke-width="3"/>
+          <rect x="50" y="230" width="20" height="20" fill="none" stroke="#fbbf24" stroke-width="2"/>
+          <text x="200" y="280" fill="#fbbf24" font-size="20" text-anchor="middle" id="side-a">a = 3</text>
+          <text x="25" y="150" fill="#fbbf24" font-size="20" text-anchor="middle" id="side-b">b = 4</text>
+          <text x="230" y="140" fill="#ef4444" font-size="20" text-anchor="middle" id="side-c">c = ?</text>
+        </svg>
+        <div class="door">🚪</div>
+      </div>
+      <div style="margin-top:1.5rem;">
+        <p style="color:#fbbf24;margin-bottom:0.5rem;">输入斜边 c 的长度：</p>
+        <input type="number" class="room-input" id="room-answer" placeholder="?" onkeydown="if(event.key==='Enter')checkRoom()">
+        <button class="action-btn success" style="margin-left:1rem;" onclick="checkRoom()">🔓 开门</button>
+      </div>
+    </div>
+    <div class="game-feedback feedback-info" id="room-feedback" style="margin-top:1rem;">公式：a² + b² = c²</div>
+  `;
+}
+
+function initRoomGame() { roomState = { round: 0 }; updateRoomDisplay(); }
+
+function updateRoomDisplay() {
+  const q = roomQuestions[roomState.round];
+  document.getElementById('side-a').textContent = `a = ${q.a}`;
+  document.getElementById('side-b').textContent = `b = ${q.b}`;
+  document.getElementById('side-c').textContent = 'c = ?';
+  document.getElementById('room-round').textContent = roomState.round + 1;
+  document.getElementById('room-answer').value = '';
+}
+
+function checkRoom() {
+  const q = roomQuestions[roomState.round];
+  const ans = parseFloat(document.getElementById('room-answer').value);
+  const feedback = document.getElementById('room-feedback');
+  if (ans === q.c) {
+    roomState.round++;
+    if (roomState.round >= roomQuestions.length) {
+      feedback.className = 'game-feedback feedback-success';
+      feedback.innerHTML = `🎉 全部通关！3-4-5, 6-8-10, 5-12-13 都是勾股数！+35逻辑币`;
+      document.getElementById('side-c').textContent = `c = ${q.c} ✓`;
+      completeChallenge(9, 35);
+    } else {
+      feedback.className = 'game-feedback feedback-success';
+      feedback.innerHTML = `✅ 正确！c = ${q.c}。进入下一关...`;
+      document.getElementById('side-c').textContent = `c = ${q.c} ✓`;
+      setTimeout(() => { updateRoomDisplay(); feedback.className = 'game-feedback feedback-info'; feedback.innerHTML = '继续计算...'; }, 1200);
+    }
+  } else {
+    feedback.className = 'game-feedback feedback-error';
+    feedback.innerHTML = `❌ 不对！a²+b² = ${q.a}²+${q.b}² = ${q.a*q.a + q.b*q.b}，c = √${q.a*q.a + q.b*q.b} = ?`;
+    addMonster('calc');
+  }
+}
+
+// ============ 游戏10：圆周角魔法阵（2题）============
+let circleState = { round: 0, angle: 45 };
+const circleQuestions = [
+  { q: '拖动滑块，观察圆周角与圆心角的关系', type: 'discover' },
+  { q: '若圆心角∠AOC=100°，则圆周角∠ABC=?', answer: 50, type: 'calc' }
+];
+
+function renderCircleGame() {
+  circleState = { round: 0, angle: 45 };
+  return renderCircleQuestion();
+}
+
+function renderCircleQuestion() {
+  const q = circleQuestions[circleState.round];
+  if (q.type === 'discover') {
+    return `
+      ${renderGameProgress(circleState.round + 1, circleQuestions.length)}
+      <div class="game-title">⭕ 第1题：圆周角魔法阵</div>
+      <p style="text-align: center; color: #c7d2fe; margin-bottom: 1rem;">拖动点B在圆上移动，观察圆周角∠ABC和圆心角∠AOC的关系！</p>
+      <canvas id="circleCanvas" class="circle-canvas" width="400" height="400"></canvas>
+      <div class="slider-container" style="margin-top:1rem;">
+        <div class="slider-label"><span>移动点B的位置</span><span id="circle-angle-val" style="color: #fbbf24;">45°</span></div>
+        <input type="range" id="circle-slider" min="10" max="170" value="45" step="1" oninput="updateCircle(this.value)">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem;max-width:400px;margin-left:auto;margin-right:auto;">
+        <div style="background:rgba(99,102,241,0.2);padding:1rem;border-radius:12px;text-align:center;">
+          <div style="color:#c7d2fe;">圆心角 ∠AOC</div>
+          <div id="central-angle" style="color:#fbbf24;font-size:1.8rem;font-weight:bold;">90°</div>
+        </div>
+        <div style="background:rgba(244,114,182,0.2);padding:1rem;border-radius:12px;text-align:center;">
+          <div style="color:#c7d2fe;">圆周角 ∠ABC</div>
+          <div id="inscribed-angle" style="color:#f472b6;font-size:1.8rem;font-weight:bold;">45°</div>
+        </div>
+      </div>
+      <div class="game-feedback feedback-info" id="circle-feedback" style="margin-top:1rem;">💡 发现了吗？圆周角总是圆心角的一半！</div>
+      <div style="text-align:center;margin-top:1rem;">
+        <button class="action-btn success" onclick="checkCircleDiscovery()">✨ 我发现了规律！</button>
+      </div>
+    `;
+  } else {
+    return `
+      ${renderGameProgress(circleState.round + 1, circleQuestions.length)}
+      <div class="game-title">⭕ 第2题：圆周角计算</div>
+      <p style="text-align: center; color: #c7d2fe; margin-bottom: 1.5rem; font-size: 1.3rem;">${q.q}</p>
+      <div style="text-align:center;margin-top:2rem;">
+        <div class="action-buttons">
+          <button class="action-btn" onclick="checkCircleCalc(25)">25°</button>
+          <button class="action-btn" onclick="checkCircleCalc(50)">50°</button>
+          <button class="action-btn" onclick="checkCircleCalc(100)">100°</button>
+          <button class="action-btn" onclick="checkCircleCalc(200)">200°</button>
+        </div>
+      </div>
+      <div class="game-feedback feedback-info" id="circle-feedback" style="margin-top:1.5rem;">💡 圆周角 = 圆心角 ÷ ?</div>
+    `;
+  }
+}
+
+function drawCircleGame() { updateCircle(circleState.angle); }
+
+function updateCircle(val) {
+  circleState.angle = parseInt(val);
+  const valEl = document.getElementById('circle-angle-val');
+  if (valEl) valEl.textContent = val + '°';
+  const insEl = document.getElementById('inscribed-angle');
+  if (insEl) insEl.textContent = val + '°';
+  const cenEl = document.getElementById('central-angle');
+  if (cenEl) cenEl.textContent = (val * 2) + '°';
+  
+  const canvas = document.getElementById('circleCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  const cx = w/2, cy = h/2, r = 150;
+  ctx.clearRect(0, 0, w, h);
+  ctx.strokeStyle = '#6366f1'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+  ctx.fillStyle = '#fbbf24'; ctx.beginPath(); ctx.arc(cx, cy, 5, 0, Math.PI * 2); ctx.fill();
+  ctx.font = 'bold 16px sans-serif'; ctx.fillText('O', cx + 8, cy - 8);
+  const ax = cx - r, ay = cy, ccx = cx + r, ccy = cy;
+  ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(ax, ay, 7, 0, Math.PI * 2); ctx.fill();
+  ctx.fillText('A', ax - 20, ay + 5);
+  ctx.fillStyle = '#10b981'; ctx.beginPath(); ctx.arc(ccx, ccy, 7, 0, Math.PI * 2); ctx.fill();
+  ctx.fillText('C', ccx + 10, ccy + 5);
+  const angleRad = (180 - val) * Math.PI / 180;
+  const bx = cx + r * Math.cos(angleRad), by = cy - r * Math.sin(angleRad);
+  ctx.fillStyle = '#f472b6'; ctx.beginPath(); ctx.arc(bx, by, 7, 0, Math.PI * 2); ctx.fill();
+  ctx.fillText('B', bx + 10, by - 5);
+  ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2; ctx.setLineDash([5, 5]);
+  ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(cx, cy); ctx.lineTo(ccx, ccy); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.strokeStyle = '#f472b6'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.lineTo(ccx, ccy); ctx.stroke();
+  ctx.fillStyle = '#ef4444'; ctx.font = 'bold 14px sans-serif';
+  ctx.fillText(`∠AOC = ${val * 2}°`, cx - 30, cy + 25);
+}
+
+function checkCircleDiscovery() {
+  const feedback = document.getElementById('circle-feedback');
+  feedback.className = 'game-feedback feedback-success';
+  feedback.innerHTML = '🎉 你发现了圆周角定理！进入下一题...';
+  circleState.round++;
+  setTimeout(() => { document.getElementById('game-area').innerHTML = renderCircleQuestion(); }, 1500);
+}
+
+function checkCircleCalc(ans) {
+  const q = circleQuestions[circleState.round];
+  const feedback = document.getElementById('circle-feedback');
+  if (ans === q.answer) {
+    feedback.className = 'game-feedback feedback-success';
+    feedback.innerHTML = '🎉 全部通关！圆周角定理掌握！+30逻辑币';
+    completeChallenge(10, 30);
+  } else {
+    feedback.className = 'game-feedback feedback-error';
+    feedback.innerHTML = `❌ 不对！圆周角 = 圆心角 ÷ 2 = 100° ÷ 2 = 50°`;
+    addMonster('calc');
+  }
+}
+
+// ============ 游戏11：函数轨道匹配（4对）============
+let funcState = { selectedFunc: null, selectedGraph: null, matched: 0 };
+
+function renderFuncMatch() {
+  funcState = { selectedFunc: null, selectedGraph: null, matched: 0 };
+  return `
+    <div class="game-title">📈 函数轨道匹配</div>
+    <p style="text-align: center; color: #c7d2fe; margin-bottom: 1.5rem;">把函数解析式和它的图像配对起来！</p>
+    <div class="func-match">
+      <div>
+        <h3 style="color:#fbbf24;text-align:center;margin-bottom:1rem;">函数解析式</h3>
+        <div class="func-list" id="func-list">
+          <div class="func-item" data-id="f1" onclick="selectFunc(this)">y = 2x + 1</div>
+          <div class="func-item" data-id="f2" onclick="selectFunc(this)">y = -x + 3</div>
+          <div class="func-item" data-id="f3" onclick="selectFunc(this)">y = 2/x</div>
+          <div class="func-item" data-id="f4" onclick="selectFunc(this)">y = -3/x</div>
+        </div>
+      </div>
+      <div>
+        <h3 style="color:#fbbf24;text-align:center;margin-bottom:1rem;">函数图像</h3>
+        <div class="graph-list" id="graph-list">
+          <div class="graph-item" data-id="g1" onclick="selectGraph(this)">📈 上升直线（过一三象限）</div>
+          <div class="graph-item" data-id="g2" onclick="selectGraph(this)">📉 下降直线（过一二四象限）</div>
+          <div class="graph-item" data-id="g3" onclick="selectGraph(this)">🔄 双曲线（一三象限）</div>
+          <div class="graph-item" data-id="g4" onclick="selectGraph(this)">🔄 双曲线（二四象限）</div>
+        </div>
+      </div>
+    </div>
+    <div class="game-feedback feedback-info" id="func-feedback" style="margin-top:1.5rem;">已匹配：<span id="func-matched">0</span>/4 对</div>
+  `;
+}
+
+const funcMatches = { f1: 'g1', f2: 'g2', f3: 'g3', f4: 'g4' };
+function initFuncMatch() { funcState = { selectedFunc: null, selectedGraph: null, matched: 0 }; }
+
+function selectFunc(el) {
+  if (el.classList.contains('matched')) return;
+  document.querySelectorAll('.func-item').forEach(i => { if (!i.classList.contains('matched')) i.classList.remove('selected'); });
+  el.classList.add('selected');
+  funcState.selectedFunc = el.dataset.id;
+  tryMatch();
+}
+
+function selectGraph(el) {
+  if (el.classList.contains('matched')) return;
+  document.querySelectorAll('.graph-item').forEach(i => { if (!i.classList.contains('matched')) i.classList.remove('selected'); });
+  el.classList.add('selected');
+  funcState.selectedGraph = el.dataset.id;
+  tryMatch();
+}
+
+function tryMatch() {
+  if (!funcState.selectedFunc || !funcState.selectedGraph) return;
+  const feedback = document.getElementById('func-feedback');
+  if (funcMatches[funcState.selectedFunc] === funcState.selectedGraph) {
+    const funcEl = document.querySelector(`.func-item[data-id="${funcState.selectedFunc}"]`);
+    const graphEl = document.querySelector(`.graph-item[data-id="${funcState.selectedGraph}"]`);
+    funcEl.classList.remove('selected'); graphEl.classList.remove('selected');
+    funcEl.classList.add('matched'); graphEl.classList.add('matched');
+    funcState.matched++;
+    document.getElementById('func-matched').textContent = funcState.matched;
+    feedback.className = 'game-feedback feedback-success';
+    feedback.innerHTML = `✨ 匹配成功！已匹配：${funcState.matched}/4 对`;
+    if (funcState.matched === 4) {
+      feedback.innerHTML = '🎉 全部匹配完成！+30逻辑币';
+      completeChallenge(11, 30);
+    }
+  } else {
+    feedback.className = 'game-feedback feedback-error';
+    feedback.innerHTML = '❌ 不匹配！记住：y=kx+b是直线（k>0上升，k<0下降），y=k/x是双曲线（k>0在一三象限，k<0在二四象限）';
+    document.querySelectorAll('.func-item, .graph-item').forEach(i => i.classList.remove('selected'));
+    addMonster('concept');
+  }
+  funcState.selectedFunc = null; funcState.selectedGraph = null;
+}
+
+// ============ 游戏12：抛物线弹弓（2题）============
+let parabolaState = { a: -1, b: 4, c: 0, round: 0 };
+const parabolaQuestions = [
+  { target: { x: 4, y: 0 }, hint: '让抛物线穿过 (4, 0)！试试 y = -x² + 4x' },
+  { target: { x: 2, y: 0 }, hint: '让抛物线穿过 (2, 0) 和 (0, 0)！试试 y = -x² + 2x' }
+];
+
+function renderParabolaGame() {
+  parabolaState = { a: -1, b: 4, c: 0, round: 0 };
+  return renderParabolaQuestion();
+}
+
+function renderParabolaQuestion() {
+  const q = parabolaQuestions[parabolaState.round];
+  return `
+    ${renderGameProgress(parabolaState.round + 1, parabolaQuestions.length)}
+    <div class="game-title">🎯 第${parabolaState.round + 1}题：愤怒的小鸟·数学版</div>
+    <p style="text-align: center; color: #c7d2fe; margin-bottom: 1rem;">调整弹弓参数，让抛物线 y = ax² + bx + c 精准穿过魔王坐标 (${q.target.x}, ${q.target.y})！</p>
+    <div class="parabola-canvas"><canvas id="parabolaCanvas" width="800" height="300"></canvas></div>
+    <div class="sliders-group">
+      <div class="slider-item">
+        <label>a（开口方向）：<span id="val-a" style="color: #fbbf24;">-1</span></label>
+        <input type="range" id="slider-a" min="-3" max="3" value="-1" step="0.1" oninput="updateParabola()">
+      </div>
+      <div class="slider-item">
+        <label>b（对称轴）：<span id="val-b" style="color: #fbbf24;">4</span></label>
+        <input type="range" id="slider-b" min="-6" max="6" value="4" step="0.1" oninput="updateParabola()">
+      </div>
+      <div class="slider-item">
+        <label>c（发射高度）：<span id="val-c" style="color: #fbbf24;">0</span></label>
+        <input type="range" id="slider-c" min="-5" max="5" value="0" step="0.1" oninput="updateParabola()">
+      </div>
+    </div>
+    <div style="text-align: center; margin-top: 1rem;">
+      <div style="color: #c7d2fe;">当 x=${q.target.x} 时，y = <span id="parabola-y" style="color: #fbbf24; font-size: 1.2rem;">0</span></div>
+    </div>
+    <div class="game-feedback feedback-info" id="parabola-feedback" style="margin-top: 1rem;">💡 ${q.hint}</div>
+    <div style="text-align: center; margin-top: 1rem;">
+      <button class="action-btn success" onclick="checkParabola()">🎯 发射炮弹！</button>
+    </div>
+  `;
+}
+
+function updateParabola() {
+  const a = parseFloat(document.getElementById('slider-a').value);
+  const b = parseFloat(document.getElementById('slider-b').value);
+  const c = parseFloat(document.getElementById('slider-c').value);
+  parabolaState = { ...parabolaState, a, b, c };
+  document.getElementById('val-a').textContent = a;
+  document.getElementById('val-b').textContent = b;
+  document.getElementById('val-c').textContent = c;
+  const q = parabolaQuestions[parabolaState.round];
+  const y = a * q.target.x * q.target.x + b * q.target.x + c;
+  document.getElementById('parabola-y').textContent = y.toFixed(2);
+  drawParabola();
+}
+
+function drawParabola() {
+  const canvas = document.getElementById('parabolaCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)'; ctx.lineWidth = 1;
+  for (let i = 0; i < w; i += 40) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, h); ctx.stroke(); }
+  for (let i = 0; i < h; i += 40) { ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(w, i); ctx.stroke(); }
+  ctx.strokeStyle = 'rgba(251, 191, 36, 0.5)'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(0, h/2); ctx.lineTo(w, h/2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(w/2, 0); ctx.lineTo(w/2, h); ctx.stroke();
+  const q = parabolaQuestions[parabolaState.round];
+  const targetX = w/2 + q.target.x * 40;
+  const targetY = h/2 - q.target.y * 40;
+  ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(targetX, targetY, 12, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.font = 'bold 14px sans-serif';
+  ctx.fillText(`魔王(${q.target.x},${q.target.y})`, targetX - 40, targetY - 18);
+  const { a, b, c } = parabolaState;
+  ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 3; ctx.beginPath();
+  let first = true;
+  for (let px = 0; px < w; px++) {
+    const x = (px - w/2) / 40;
+    const y = a * x * x + b * x + c;
+    const py = h/2 - y * 40;
+    if (py < -100 || py > h + 100) { first = true; continue; }
+    if (first) { ctx.moveTo(px, py); first = false; } else ctx.lineTo(px, py);
+  }
+  ctx.stroke();
+}
+
+function checkParabola() {
+  const { a, b, c, round } = parabolaState;
+  const q = parabolaQuestions[round];
+  const y = a * q.target.x * q.target.x + b * q.target.x + c;
+  const feedback = document.getElementById('parabola-feedback');
+  if (Math.abs(y) < 0.1 && a < 0) {
+    feedback.className = 'game-feedback feedback-success';
+    parabolaState.round++;
+    if (parabolaState.round >= parabolaQuestions.length) {
+      feedback.innerHTML = '🎉 完美命中！宇宙恢复和平！+50逻辑币 🏆';
+      completeChallenge(12, 50);
+    } else {
+      feedback.innerHTML = '✨ 命中！进入下一题...';
+      setTimeout(() => { document.getElementById('game-area').innerHTML = renderParabolaQuestion(); updateParabola(); }, 1200);
+    }
+  } else if (Math.abs(y) < 0.5) {
+    feedback.className = 'game-feedback feedback-success';
+    feedback.innerHTML = '✨ 非常接近！再微调一下参数！';
+  } else {
+    feedback.className = 'game-feedback feedback-error';
+    feedback.innerHTML = `💥 未命中！y = ${y.toFixed(2)}，目标是0。调整参数让抛物线穿过目标点！`;
+  }
+}
+
+// ============ B站视频渲染 ============
+function renderVideoLinks(levelId) {
+  const videos = BILIBILI_VIDEOS[levelId];
+  if (!videos || videos.length === 0) return '';
+  const listHtml = videos.map(v =>
+    `<a class="video-link" href="https://www.bilibili.com/video/${v.bv}" target="_blank" rel="noopener noreferrer">
+      <span class="play-icon">▶️</span>
+      <span class="vid-title">${v.title}</span>
+    </a>`
+  ).join('');
+  return `
+    <div class="video-section">
+      <h2 class="section-title" style="margin-top: 2rem;">📺 配套视频</h2>
+      <p style="color: #a5b4fc; margin-bottom: 0.5rem; font-size: 0.9rem;">
+        🎬 点击视频卡片前往B站观看对应知识点讲解
+      </p>
+      <div class="video-grid">${listHtml}</div>
+    </div>
+  `;
+}
+
+// ============ 知识内容 ============
+function getKnowledgeContent(id) {
+  const contents = {
+    1: `
+      <div class="knowledge-card"><h3>🔢 有理数的分类</h3><p>按定义分：<strong>整数</strong>（正整数、0、负整数）和<strong>分数</strong>（正分数、负分数）。</p><p>按正负分：正有理数 > 0 > 负有理数。</p><p style="color: #fbbf24;">💡 π 不是有理数！无限不循环小数是无理数。</p></div>
+      <div class="knowledge-card"><h3>📏 数轴三要素</h3><p><span class="hint-badge">原点</span> <span class="hint-badge">正方向</span> <span class="hint-badge">单位长度</span> 缺一不可！</p><p>右边的数 <strong>总是大于</strong> 左边的数。</p><p style="color: #10b981;">✅ 比较两个负数：绝对值大的反而小！</p></div>
+      <div class="knowledge-card"><h3>🔄 相反数</h3><p>只有符号不同的两个数互为相反数。a 的相反数是 -a（0的相反数是0）。</p><p>几何意义：位于原点两侧，到原点的距离相等。</p></div>
+      <div class="knowledge-card"><h3>🛡️ 绝对值——到原点的距离</h3><p>|a| 表示 a 到原点的<strong>距离</strong>，<strong style="color: #fbbf24;">永远非负</strong>：|a| ≥ 0。</p><p>正数的绝对值是它本身；负数的绝对值是它的相反数；0的绝对值是0。</p><p style="color: #ef4444;">⚠️ 认为 |-a| = a 是错的！如果 a 是负数呢？</p></div>
+      <div class="knowledge-card"><h3>🎯 有理数加减法口诀</h3><p><strong>同号相加</strong>：符号不变，绝对值相加。</p><p><strong>异号相加</strong>：符号取大，绝对值相减。</p><p><strong>减法</strong>：a - b = a + (-b)（减去一个数等于加上它的相反数）</p></div>
+      <div class="knowledge-card"><h3>📝 乘除法与科学记数法</h3><p><strong>乘法</strong>：同号得正，异号得负，绝对值相乘。</p><p><strong>除法</strong>：除以一个数等于乘以它的倒数（除数≠0）。</p><p><span class="hint-badge">科学记数法</span>a × 10ⁿ，1 ≤ |a| < 10</p></div>
+    `,
+    2: `
+      <div class="knowledge-card"><h3>⭐ 代数式入门</h3><p>用运算符号把数和字母连接起来的式子叫<strong>代数式</strong>。</p><p>例如：3x+2y，a²-b²，<sup>1</sup>⁄<sub>2</sub>πr²。单独一个数或字母也是代数式。</p></div>
+      <div class="knowledge-card"><h3>🌟 单项式</h3><p>数字与字母的<strong>积</strong>（不含加减）。</p><p><span class="hint-badge">系数</span>数字因数（<strong style="color:#ef4444;">包括符号</strong>）。<span class="hint-badge">次数</span>所有字母指数之和。</p><p>例如：-2a²b 系数 -2，次数 3。</p><p style="color:#ef4444;">⚠️ π 是常数（≈3.14），不是字母！πr² 次数是 2。</p></div>
+      <div class="knowledge-card"><h3>🌿 多项式</h3><p>几个单项式的<strong>和</strong>。每个单项式是<strong>项</strong>，不含字母的是<strong>常数项</strong>。</p><p><strong>次数</strong>：次数最高项的次数。</p><p>例如：3x² - 2x + 1 有三项，次数是 2。</p></div>
+      <div class="knowledge-card"><h3>🤝 同类项——"双胞胎"单项式</h3><p>所含字母<strong>相同</strong>，相同字母的指数也<strong>分别相同</strong>。</p><p><strong>合并法则</strong>：系数相加，字母和指数不变。</p><p>3a²b + (-7a²b) = (3-7)a²b = -4a²b</p><p style="color:#ef4444;">⚠️ 3a² 和 3ab <strong>不是</strong>同类项！字母不同。</p></div>
+      <div class="knowledge-card"><h3>📐 整式加减——去括号</h3><p>括号前是"+"，不变号；括号前是"-"，<strong>全部变号</strong>。</p><p>3x - (2x - 1) = 3x - 2x + 1 = x + 1</p><p><strong>步骤</strong>：去括号 → 找同类项 → 合并同类项</p></div>
+      <div class="knowledge-card"><h3>📊 幂的运算法则</h3><p>a<sup>m</sup>·a<sup>n</sup> = a<sup>m+n</sup>（同底数幂相乘，指数相加）</p><p>(a<sup>m</sup>)<sup>n</sup> = a<sup>mn</sup>（幂的乘方，指数相乘）</p><p>(ab)<sup>n</sup> = a<sup>n</sup>b<sup>n</sup>（积的乘方等于乘方的积）</p></div>
+    `,
+    3: `
+      <div class="knowledge-card"><h3>🍕 分式的概念</h3><p>形如 <sup>A</sup>⁄<sub>B</sub>（B 含字母，B ≠ 0）叫分式。</p><p>分母含字母是分式，分母是常数（如 <sup>x</sup>⁄<sub>2</sub>）是整式。</p><p style="color:#ef4444;">⚠️ 分母为0时，分式无意义！</p></div>
+      <div class="knowledge-card"><h3>🔄 分式基本性质</h3><p>分子分母同乘（或除以）同一个<strong>不为0</strong>的整式，值不变。</p><p><span class="hint-badge">约分</span>约去公因式得到最简分式。</p><p><span class="hint-badge">通分</span>找<strong>最简公分母</strong>：各分母系数的最小公倍数 × 所有因式的最高次幂。</p></div>
+      <div class="knowledge-card"><h3>🧮 分式运算</h3><p><strong>加减</strong>：同分母直接加减分子；异分母先通分。</p><p><strong>乘</strong>：分子乘分子，分母乘分母。</p><p><strong>除</strong>：乘以除式的倒数。</p><p style="color:#10b981;">✅ 结果要化为最简分式！</p></div>
+      <div class="knowledge-card"><h3>🌿 二次根式 √a</h3><p>形如 √a（a ≥ 0），<strong>双重非负性</strong>：① a ≥ 0 ② √a ≥ 0。</p><p>例如 √4 = 2，√(-3) 无意义。</p></div>
+      <div class="knowledge-card"><h3>📐 二次根式性质</h3><p>(√a)² = a（a ≥ 0）——根号与平方抵消</p><p>√(a²) = |a| ——平方再开方等于<strong>绝对值</strong>！</p><p>√a · √b = √(ab)，√a / √b = √(a/b)（a≥0，b>0）</p><p style="color:#ef4444;">⚠️ √(a+b) ≠ √a + √b！常见错误。</p></div>
+      <div class="knowledge-card"><h3>✨ 分母有理化</h3><p>把分母中的根号去掉：分子分母同乘<strong>有理化因式</strong>。</p><p><sup>1</sup>⁄<sub>√2</sub> = <sup>√2</sup>⁄<sub>2</sub>（同乘√2）</p><p><sup>1</sup>⁄<sub>√a+√b</sub> 同乘 √a-√b（平方差公式）。</p></div>
+    `,
+    4: `
+      <div class="knowledge-card"><h3>⚖️ 等式的基本性质</h3><p><strong>性质1</strong>：两边同加减同一个数，等式仍成立。</p><p><strong>性质2</strong>：两边同乘除同一个<strong>不为0</strong>的数，等式仍成立。</p><p style="color: #fbbf24;">💡 方程的"根"就是使等式成立的未知数的值。</p></div>
+      <div class="knowledge-card"><h3>🔄 移项变号详解</h3><p><strong>移项</strong>：把项从等号一边移到另一边。<strong style="color: #ef4444;">必须变号！</strong></p><p>本质是"两边同时加减同一个数"。+变-，-变+。</p><p>3x - 7 = 2x + 5 → 3x - 2x = 5 + 7 → x = 12</p></div>
+      <div class="knowledge-card"><h3>📝 一元一次方程五步法</h3><p><span class="hint-badge">①去分母</span>两边乘各分母的最小公倍数</p><p><span class="hint-badge">②去括号</span>分配律展开（注意负号！）</p><p><span class="hint-badge">③移项</span>含未知数在左，常数在右</p><p><span class="hint-badge">④合并</span>合并同类项</p><p><span class="hint-badge">⑤系数化1</span>两边除以未知数的系数</p></div>
+      <div class="knowledge-card"><h3>📐 不等式性质——和等式不同之处</h3><p><strong>相同</strong>：两边加减同一个数，方向不变。</p><p><strong>不同</strong>：乘除<strong style="color:#ef4444;">负数</strong>时，不等号方向<strong style="color:#ef4444;">必须改变</strong>！</p><p>-2x > 6 → x < -3（除以 -2，方向反转）</p><p style="color:#ef4444;">⚠️ 最容易出错的地方！</p></div>
+      <div class="knowledge-card"><h3>🔗 不等式组口诀</h3><p>解集取各个解集的<strong>公共部分</strong>：</p><p><span class="hint-badge">同大取大</span>x>a 且 x>b（a>b）→ x>a</p><p><span class="hint-badge">同小取小</span>x<a 且 x<b（a<b）→ x<a</p><p><span class="hint-badge">大小小大中间找</span>x>a 且 x<b（a<b）→ a<x<b</p><p><span class="hint-badge">大大小小无处找</span>x<a 且 x>b（a<b）→ 无解</p></div>
+      <div class="knowledge-card"><h3>🌍 应用题建模四步法</h3><p><strong>①审题</strong>找到<strong>等量关系</strong>（或不等关系）</p><p><strong>②设未知数</strong>问什么设什么，也可设间接未知数</p><p><strong>③列方程</strong>根据等量关系列出方程（不等式）</p><p><strong>④求解检验</strong>代入原题是否符合实际</p><p style="color:#fbbf24;">💡 常见等量：v·t=s、单价×数量=总价、效率×时间=总量</p></div>
+    `,
+    5: `
+      <div class="knowledge-card"><h3>🌋 一元二次方程的一般形式</h3><p>ax² + bx + c = 0（<strong style="color:#ef4444;">a ≠ 0</strong>）</p><p>a 二次项系数，b 一次项系数，c 常数项。</p><p>例如：3x² - 5x + 2 = 0 中 a=3, b=-5, c=2</p></div>
+      <div class="knowledge-card"><h3>🌱 解法一：因式分解法（最简便）</h3><p>把方程左边分解成两个一次因式的乘积。</p><p><strong>十字相乘</strong>：x² + (p+q)x + pq = (x+p)(x+q)</p><p>例如：x² - 5x + 6 = 0 → (x-2)(x-3) = 0 → x=2 或 x=3</p><p style="color:#10b981;">✅ 适用：方程左边容易分解时优先使用。</p></div>
+      <div class="knowledge-card"><h3>📐 解法二：配方法</h3><p>通过配成完全平方来求解。</p><p><strong>步骤</strong>：①移常数项 ②两边加(b/2)² ③左边写成完全平方 ④开平方</p><p>x² + 6x - 7 = 0 → x² + 6x + 9 = 16 → (x+3)² = 16 → x+3 = ±4 → x=1 或 x=-7</p></div>
+      <div class="knowledge-card"><h3>🧮 解法三：公式法（万能解法）</h3><p>求根公式：x = <sup>-b ± √(b²-4ac)</sup>⁄<sub>2a</sub></p><p>代入 a, b, c 直接计算！任何一元二次方程都可用。</p><p style="color:#fbbf24;">💡 记住公式！考试中最保险的方法。</p></div>
+      <div class="knowledge-card"><h3>📊 判别式 Δ = b² - 4ac</h3><p><span class="hint-badge">Δ > 0</span>两个不同的实根</p><p><span class="hint-badge">Δ = 0</span>两个相等的实根（重根）</p><p><span class="hint-badge">Δ < 0</span>方程<strong>无实根</strong>（但有复数根）</p></div>
+      <div class="knowledge-card"><h3>🔗 韦达定理（根与系数的关系）</h3><p>设 ax² + bx + c = 0 的两个根为 x₁, x₂，则：</p><p>x₁ + x₂ = -<sup>b</sup>⁄<sub>a</sub> &nbsp;&nbsp; x₁ · x₂ = <sup>c</sup>⁄<sub>a</sub></p><p>不必解方程，可以直接求出两根的和与积！</p></div>
+    `,
+    6: `
+      <div class="knowledge-card"><h3>📏 线的三兄弟</h3><p><span class="hint-badge">直线</span>向两端无限延伸，无端点。过两点有且只有一条直线。</p><p><span class="hint-badge">射线</span>一个端点，向一端无限延伸。</p><p><span class="hint-badge">线段</span>两个端点，长度有限。两点之间线段最短。</p></div>
+      <div class="knowledge-card"><h3>📐 角的度量与分类</h3><p>1° = 60'，1' = 60"。<strong>锐角</strong> 0°<θ<90°，<strong>直角</strong> θ=90°，<strong>钝角</strong> 90°<θ<180°。</p><p><strong>平角</strong> θ=180°，<strong>周角</strong> θ=360°。</p><p style="color:#10b981;">✅ 补角：两角之和为180°；余角：两角之和为90°。</p></div>
+      <div class="knowledge-card"><h3>⚡ 相交线——对顶角与邻补角</h3><p>两条直线相交形成两对对顶角、四对邻补角。</p><p><span class="hint-badge">对顶角</span>相等！对顶角的两边互为反向延长线。</p><p><span class="hint-badge">邻补角</span>互补（和为180°），有一条公共边。</p></div>
+      <div class="knowledge-card"><h3>🔍 三线八角（两条直线被第三条直线所截）</h3><p><span class="hint-badge">同位角</span>位置相同（F形），两直线平行则相等。</p><p><span class="hint-badge">内错角</span>内部交错（Z形），两直线平行则相等。</p><p><span class="hint-badge">同旁内角</span>内部同侧（U形），两直线平行则互补。</p></div>
+      <div class="knowledge-card"><h3>📏 平行线的判定与性质</h3><p><strong>判定</strong>：同位角相等 → 两直线平行</p><p>内错角相等 → 两直线平行</p><p>同旁内角互补 → 两直线平行</p><p><strong>性质</strong>：两直线平行 → 同位角相等、内错角相等、同旁内角互补</p></div>
+      <div class="knowledge-card"><h3>📐 垂线</h3><p>过一点<strong>有且只有</strong>一条直线与已知直线垂直。</p><p>直线外一点到这条直线的垂线段的长度叫做<strong>点到直线的距离</strong>。</p><p>垂线段最短！</p></div>
+    `,
+    7: `
+      <div class="knowledge-card"><h3>🪞 全等三角形判定（五把金钥匙）</h3><p><span class="hint-badge">SSS</span>三边对应相等</p><p><span class="hint-badge">SAS</span>两边及其夹角对应相等</p><p><span class="hint-badge">ASA</span>两角及其夹边对应相等</p><p><span class="hint-badge">AAS</span>两角及其中一角的对边对应相等</p><p><span class="hint-badge">HL</span>直角三角形斜边和一条直角边对应相等</p><p style="color:#fbbf24;">💡 HL是直角三角形独家判定，其他三角形不能用。</p></div>
+      <div class="knowledge-card"><h3>⚠️ SSA陷阱</h3><p>两边及其中一边的对角（SSA）<strong style="color: #ef4444;">不能</strong>判定全等！</p><p>反例：锐角三角形和钝角三角形可能满足SSA但不全等。</p><p style="color:#10b981;">✅ 直角三角形的HL本质上是SSA的特例（90°固定了形状）。</p></div>
+      <div class="knowledge-card"><h3>🔗 角平分线与中垂线</h3><p><span class="hint-badge">角平分线</span>上的点到角两边的距离<strong>相等</strong>。</p><p>到角两边距离相等的点在角平分线上。</p><p><span class="hint-badge">中垂线</span>上的点到线段两端点的距离<strong>相等</strong>。</p><p>到线段两端距离相等的点在中垂线上。</p></div>
+      <div class="knowledge-card"><h3>📐 等腰三角形</h3><p><strong>性质</strong>：<span class="hint-badge">等边对等角</span>两底角相等。</p><p><span class="hint-badge">三线合一</span>顶角平分线、底边中线、底边上的高互相重合。</p><p><strong>判定</strong>：有两个角相等 → 等腰（等角对等边）。</p></div>
+      <div class="knowledge-card"><h3>♢ 等边三角形</h3><p>三边相等，三个内角 = <strong>60°</strong>。</p><p>三线合一 × 三条对称轴。</p><p>判定：①三边相等 ②三角都是60° ③等腰+一个角60°</p><p style="color:#fbbf24;">💡 含30°的Rt△中，30°所对直角边 = 斜边的一半。</p></div>
+      <div class="knowledge-card"><h3>🔺 全等证明思路</h3><p><strong>找等量</strong>：公共边、公共角、对顶角、中点和角平分线。</p><p><strong>选方法</strong>：已知条件+隐含条件 → 选最简便的判定。</p><p style="color:#ef4444;">❌ 常见错误：用SSA或把HL用在非直角三角形上。</p></div>
+    `,
+    8: `
+      <div class="knowledge-card"><h3>📊 多边形内角和公式</h3><p>四边形内角和 = 360°</p><p>n边形内角和 = (n-2) × <strong>180°</strong></p><p>n边形外角和 = <strong>360°</strong>（恒为360°，与边数无关！）</p><p style="color:#fbbf24;">💡 正n边形每个内角 = (n-2)×180°÷n</p></div>
+      <div class="knowledge-card"><h3>🟦 平行四边形</h3><p>对边<strong>平行且相等</strong>，对角相等，邻角互补，对角线互相平分。</p><p><strong>判定</strong>：①两组对边分别平行 ②一组对边平行且相等 ③对角线互相平分</p></div>
+      <div class="knowledge-card"><h3>🔷 菱形</h3><p><strong>四边相等</strong>的平行四边形。</p><p>对角线<strong>互相垂直平分</strong>，每条对角线平分一组对角。</p><p>面积 = 对角线乘积 ÷ 2</p><p>判定：①四边相等 ②对角线互相垂直的平行四边形</p></div>
+      <div class="knowledge-card"><h3>🧱 矩形</h3><p>四个角为90°的平行四边形。对角线<strong>相等</strong>且互相平分。</p><p>判定：①一个角为直角的平行四边形 ②对角线相等的平行四边形</p><p><span class="hint-badge">正方形</span>既是矩形又是菱形！四边相等+四个角90°。</p></div>
+      <div class="knowledge-card"><h3>💠 梯形</h3><p>只有<strong>一组</strong>对边平行的四边形。</p><p><span class="hint-badge">等腰梯形</span>两腰相等，底角相等，对角线相等。</p><p><span class="hint-badge">梯形中位线</span> = (上底 + 下底) ÷ 2</p></div>
+      <div class="knowledge-card"><h3>📐 四边形关系图</h3><p>四边形 → 平行四边形 → 矩形/菱形 → 正方形</p><p>四边形 → 梯形 → 等腰梯形</p><p style="color:#10b981;">✅ 正方形是矩形和菱形的完美交集！</p></div>
+    `,
+    9: `
+      <div class="knowledge-card"><h3>📐 勾股定理</h3><p>直角三角形：a² + b² = c²（c 是斜边，最长边）</p><p><span class="hint-badge">勾3股4弦5</span>3²+4²=5² → 9+16=25</p><p><span class="hint-badge">5-12-13</span>5²+12²=13² → 25+144=169</p><p style="color:#fbbf24;">💡 勾股定理只能用在直角三角形上！</p></div>
+      <div class="knowledge-card"><h3>🔍 勾股逆定理（判定Rt△）</h3><p>如果三角形三边满足 a² + b² = c²，那么它是<strong>直角三角形</strong>。</p><p>例：6, 8, 10 → 36+64=100=10² → Rt△！</p><p>判定时先找最长边作为斜边。</p></div>
+      <div class="knowledge-card"><h3>📏 勾股数</h3><p>满足 a²+b²=c² 的<strong>正整数</strong>三元组。</p><p><strong>基本勾股数</strong>：(3,4,5) (5,12,13) (7,24,25) (8,15,17)</p><p>勾股数的整数倍仍是勾股数，如(6,8,10)、(9,12,15)。</p></div>
+      <div class="knowledge-card"><h3>🔄 相似三角形</h3><p>对应角<strong>相等</strong>，对应边<strong>成比例</strong>。</p><p><span class="hint-badge">AAA</span>两角对应相等 → 第三角自然相等</p><p><span class="hint-badge">SSS</span>三边对应成比例</p><p><span class="hint-badge">SAS</span>两边成比例且夹角相等</p><p>注意！AAA不能用于全等（不能确定大小），但可以判断相似。</p></div>
+      <div class="knowledge-card"><h3>⚖️ 相似比与面积比</h3><p>相似比 = 对应边的比（设为 k）。</p><p><strong>周长比</strong> = k</p><p><strong>面积比</strong> = k²（平方！）</p><p><strong>体积比</strong> = k³</p><p style="color:#10b981;">✅ 记住：面积比是相似比的平方！</p></div>
+      <div class="knowledge-card"><h3>🌉 相似的应用——测高</h3><p>利用相似三角形<strong>测量</strong>不能直接测的高度：</p><p>①太阳光下：身高:影长 = 物高:物影</p><p>②利用标杆构造相似三角形</p><p>③镜面反射法（入射角=反射角）</p></div>
+    `,
+    10: `
+      <div class="knowledge-card"><h3>⭕ 圆的基本概念</h3><p><strong>圆心</strong>确定位置，<strong>半径</strong>确定大小。</p><p><strong>弦</strong>：圆上任意两点的连线。直径是最长的弦（过圆心）。</p><p><strong>弧</strong>：圆上两点间的部分。大于半圆叫优弧，小于半圆叫劣弧。</p></div>
+      <div class="knowledge-card"><h3>🎯 垂径定理</h3><p>垂直于弦的直径<strong>平分</strong>弦，并且平分弦所对的两条弧。</p><p>常用于求弦长、弦心距、半径。三者构成<strong>直角三角形</strong>：</p><p>r² = d² + (弦长/2)²（r半径，d弦心距）</p></div>
+      <div class="knowledge-card"><h3>🌟 圆周角定理</h3><p>同弧所对的圆周角 = 圆心角的<strong>一半</strong>。</p><p><strong>推论</strong>：同弧或等弧所对的圆周角<strong>相等</strong>。</p><p><strong>直径定理</strong>：直径所对的圆周角 = <strong>90°</strong>（直角）。</p><p style="color:#fbbf24;">💡 看到圆中直角，优先想到直径！</p></div>
+      <div class="knowledge-card"><h3>🔗 圆的切线</h3><p>过圆上一点且垂直于半径的直线是切线。</p><p>切线与圆<strong>只有一个</strong>交点。</p><p><span class="hint-badge">切线长定理</span>从圆外一点引两条切线，切线长<strong>相等</strong>。</p></div>
+      <div class="knowledge-card"><h3>📐 圆内接四边形</h3><p>圆内接四边形的<strong>对角互补</strong>（和为180°），外角等于内对角。</p><p>判定：如果四边形对角互补，则四顶点共圆。</p></div>
+      <div class="knowledge-card"><h3>🎂 扇形与弧长公式</h3><p>弧长 L = <sup>nπr</sup>⁄<sub>180</sub>（n是圆心角）</p><p>扇形面积 S = <sup>nπr²</sup>⁄<sub>360</sub> = <sup>Lr</sup>⁄<sub>2</sub></p><p>扇形面积公式很像三角形：弧长×半径÷2！</p></div>
+    `,
+    11: `
+      <div class="knowledge-card"><h3>📈 一次函数 y = kx + b</h3><p>k 是斜率：k>0 直线上升；k<0 直线下降；|k|越大越陡。</p><p>b 是截距：与 y 轴交点为 (0, b)。</p><p>与 x 轴交点：(-b/k, 0)。</p></div>
+      <div class="knowledge-card"><h3>📉 一次函数图像变换</h3><p><span class="hint-badge">k 相同</span>两直线<strong>平行</strong>（上下平移）。</p><p><span class="hint-badge">k 互为负倒数</span>两直线<strong>垂直</strong>（k₁·k₂=-1）。</p><p style="color:#10b981;">左加右减：y=k(x+m)+b 左移m个单位。</p></div>
+      <div class="knowledge-card"><h3>🔢 解析式求法</h3><p>已知两点 (x₁,y₁)、(x₂,y₂)：</p><p>① k = (y₂-y₁)/(x₂-x₁)</p><p>② 代入一点：b = y₁ - kx₁</p><p>例：(1,3)、(2,5) → k=2，b=1 → y=2x+1</p></div>
+      <div class="knowledge-card"><h3>🔄 反比例函数 y = k/x (k≠0)</h3><p>图像是<strong>双曲线</strong>，与坐标轴<strong>永不相交</strong>。</p><p>k>0：在一、三象限，y 随 x 增大而减小</p><p>k<0：在二、四象限，y 随 x 增大而增大</p></div>
+      <div class="knowledge-card"><h3>⚡ 反比例函数中 k 的几何意义</h3><p>双曲线上任意一点 P(x,y)，向坐标轴作垂线：</p><p>矩形面积 = |x·y| = <strong>|k|</strong>。</p><p>即 k 等于图像上点横纵坐标的乘积（恒定不变）。</p></div>
+      <div class="knowledge-card"><h3>🔗 一次函数与反比例函数对比</h3><p><span class="hint-badge">一次函数</span>y=kx+b 图像是直线，一增一减。</p><p><span class="hint-badge">反比例函数</span>y=k/x 图像是双曲线，两段同增同减。</p><p>求交点：联立方程解出 x，再代回求 y。</p></div>
+    `,
+    12: `
+      <div class="knowledge-card"><h3>🎯 二次函数 y = ax² + bx + c（a≠0）</h3><p><span class="hint-badge">a</span>决定开口：a>0向上，a<0向下。|a|越大开口越小。</p><p><span class="hint-badge">b</span>与a决定对称轴：x = -b/(2a)。<strong>左同右异</strong>。</p><p><span class="hint-badge">c</span>决定与y轴交点：(0, c)。</p></div>
+      <div class="knowledge-card"><h3>📐 顶点式与对称轴</h3><p>一般式 y = ax² + bx + c 配方后：</p><p>y = a(x + <sup>b</sup>⁄<sub>2a</sub>)² + <sup>4ac-b²</sup>⁄<sub>4a</sub></p><p><strong>顶点坐标</strong>：(-b/(2a), (4ac-b²)/(4a))</p><p><strong>对称轴</strong>：x = -b/(2a)</p></div>
+      <div class="knowledge-card"><h3>🔢 解析式的三种形式</h3><p><span class="hint-badge">一般式</span>y = ax² + bx + c（已知三点）</p><p><span class="hint-badge">顶点式</span>y = a(x-h)² + k（已知顶点(h,k)）</p><p><span class="hint-badge">交点式</span>y = a(x-x₁)(x-x₂)（已知与x轴交点）</p><p style="color:#fbbf24;">💡 根据已知条件选择最方便的形式！</p></div>
+      <div class="knowledge-card"><h3>📊 抛物线与 x 轴的交点（根）</h3><p>判断二次方程 ax²+bx+c=0 的根：</p><p><span class="hint-badge">Δ>0</span>两个交点 (x₁,0)(x₂,0)</p><p><span class="hint-badge">Δ=0</span>一个交点（顶点在x轴上）</p><p><span class="hint-badge">Δ<0</span>无交点（抛物线在x轴上方或下方）</p></div>
+      <div class="knowledge-card"><h3>📈 二次函数图像变换</h3><p><strong>平移</strong>：y = a(x-h)² + k，h控制左右（左加右减），k控制上下。</p><p><strong>翻转</strong>：用 -a 替换 a，图像关于 x 轴对称。</p><p>也就是说：y = ax² 与 y = -ax² 关于 x 轴对称。</p></div>
+      <div class="knowledge-card"><h3>🌉 二次函数的实际应用</h3><p><strong>最值问题</strong>：开口向上有最小值（顶点），开口向下有最大值。</p><p><strong>抛物线轨迹</strong>：抛体运动的路径是抛物线（篮球投篮、喷泉）。</p><p><strong>拱桥问题</strong>：拱桥的形状常为抛物线，可用二次函数建模。</p></div>
+    `
+  };
+  return contents[id] || `<div class="knowledge-card"><h3>🌟 知识点</h3><p>探索这个星系的数学奥秘！</p></div>`;
+}
+
+function getGameContent(id) {
+  const games = {
+    1: renderBlackholeGame, 2: renderMatchGame, 3: renderPizzaGame,
+    4: renderBalanceGame, 5: renderBombGame, 6: renderAngleHunter,
+    7: renderCloneGame, 8: renderQuadEvolution, 9: renderRoomGame,
+    10: renderCircleGame, 11: renderFuncMatch, 12: renderParabolaGame
+  };
+  return (games[id] || renderDefaultGame)(id);
+}
+
+function renderDefaultGame(id) {
+  return `<div class="game-title">🎮 知识挑战</div><div style="text-align: center; padding: 2rem;"><button class="action-btn success" onclick="completeChallenge(${id}, 15)">✨ 快速完成（+15逻辑币）</button></div>`;
+}
+
+// ============ 跳过功能（自定义模态框）============
+function showSkipModal(id) {
+  if (gameState.completed.includes(id)) {
+    alert('你已经完成此关啦！');
+    return;
+  }
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'skip-modal';
+  overlay.innerHTML = `
+    <div class="modal-box">
+      <h3>⏭️ 确定跳过第${id}关？</h3>
+      <p>
+        ⚠️ 跳过后不会获得逻辑币和星星<br>
+        ⚠️ 但会解锁下一关<br>
+        ✅ 之后可以随时回来重玩
+      </p>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeSkipModal()">取消</button>
+        <button class="btn-confirm" onclick="confirmSkip(${id})">确定跳过</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
+function closeSkipModal() {
+  const m = document.getElementById('skip-modal');
+  if (m) m.remove();
+}
+
+function confirmSkip(id) {
+  closeSkipModal();
+  if (!gameState.skipped.includes(id)) {
+    gameState.skipped.push(id);
+  }
+  gameState.stats.resist = Math.min(100, gameState.stats.resist + 2);
+  updateStats();
+  renderGalaxyMap();
+  removeFloatingSkip();
+  showPage('map');
+}
+
+function addFloatingSkip(id) {
+  removeFloatingSkip();
+  const btn = document.createElement('button');
+  btn.className = 'float-skip';
+  btn.id = 'float-skip-btn';
+  btn.innerHTML = '⏭️ 跳过此关';
+  btn.onclick = () => showSkipModal(id);
+  document.body.appendChild(btn);
+}
+
+function removeFloatingSkip() {
+  const btn = document.getElementById('float-skip-btn');
+  if (btn) btn.remove();
+}
+
+// ============ 成就与怪兽 ============
+function renderAchievements() {
+  const grid = document.getElementById('achievements-grid');
+  grid.innerHTML = ACHIEVEMENTS.map(a => {
+    const isUnlocked = checkAchievement(a);
+    return `
+      <div class="achievement-card ${isUnlocked ? '' : 'locked'}">
+        <div class="achievement-icon">${a.icon}</div>
+        <div class="achievement-name">${a.name}</div>
+        <div style="color: #c7d2fe; font-size: 0.9rem;">${a.desc}</div>
+        ${isUnlocked ? '<div style="color: #10b981; margin-top: 0.5rem;">✅ 已解锁</div>' : '<div style="color: #ef4444; margin-top: 0.5rem;">🔒 未解锁</div>'}
+      </div>
+    `;
+  }).join('');
+}
+
+function checkAchievement(a) {
+  if (a.type === 'coins') return gameState.coins >= a.condition;
+  return gameState.completed.length >= a.condition;
+}
+
+function renderMonsters() {
+  const grid = document.getElementById('monster-grid');
+  if (!grid) return;
+  grid.innerHTML = MONSTERS.map(m => {
+    const isPurified = gameState.monsters.includes(m.id + '_purified');
+    const isCaught = gameState.monsters.includes(m.id);
+    return `
+      <div class="monster-card ${isPurified ? 'purified' : ''}">
+        <div style="font-size: 4rem;">${m.icon}</div>
+        <div style="color: #fbbf24; font-size: 1.1rem; margin-top: 0.5rem;">${m.name}</div>
+        <div style="color: #c7d2fe; font-size: 0.85rem;">${m.desc}</div>
+        ${!isCaught ? '<div style="color: #6b7280; font-size: 0.8rem; margin-top: 0.5rem;">🔒 未发现</div>' : ''}
+        ${isCaught && !isPurified ? `<button class="action-btn success" style="margin-top: 0.5rem; font-size: 0.9rem; padding: 0.4rem 1rem;" onclick="purifyMonster('${m.id}')">✨ 净化</button>` : ''}
+        ${isPurified ? '<div style="color: #10b981; font-size: 0.85rem; margin-top: 0.5rem;">✨ 已净化</div>' : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function addMonster(id) {
+  if (!gameState.monsters.includes(id)) {
+    gameState.monsters.push(id);
+    renderMonsters();
+  }
+}
+
+function purifyMonster(id) {
+  if (!gameState.monsters.includes(id + '_purified')) {
+    gameState.monsters.push(id + '_purified');
+    gameState.coins += 10;
+    updateStats();
+    renderMonsters();
+  }
+}
+
+// ============ 挑战完成 ============
+function completeChallenge(galaxyId, coins) {
+  if (!gameState.completed.includes(galaxyId)) {
+    gameState.completed.push(galaxyId);
+  }
+  // 如果之前跳过过，移除跳过状态
+  gameState.skipped = gameState.skipped.filter(id => id !== galaxyId);
+  gameState.coins += coins;
+  gameState.stars += 1;
+  gameState.exp += 20;
+
+  const galaxy = GALAXIES.find(g => g.id === galaxyId);
+  if (galaxy.type === 'algebra') {
+    gameState.stats.calc = Math.min(100, gameState.stats.calc + 10);
+    gameState.stats.logic = Math.min(100, gameState.stats.logic + 5);
+  } else {
+    gameState.stats.space = Math.min(100, gameState.stats.space + 10);
+    gameState.stats.reverse = Math.min(100, gameState.stats.reverse + 5);
+  }
+  gameState.stats.resist = Math.min(100, gameState.stats.resist + 3);
+
+  updateStats();
+  renderGalaxyMap();
+  renderAchievements();
+
+  if (gameState.exp >= 100) {
+    gameState.level++;
+    gameState.exp -= 100;
+  }
+
+  // 自动进入下一关（如果不是最后一关）
+  const nextId = galaxyId + 1;
+  if (nextId <= GALAXIES.length) {
+    setTimeout(() => {
+      enterGalaxy(nextId);
+    }, 2500);
+  }
+}
+
+function updateStats() {
+  document.getElementById('coin-count').textContent = gameState.coins;
+  document.getElementById('star-count').textContent = gameState.stars;
+  document.getElementById('player-level').textContent = gameState.level;
+  document.getElementById('player-exp').textContent = gameState.exp;
+  document.getElementById('exp-bar').style.width = gameState.exp + '%';
+  document.getElementById('learned-count').textContent = gameState.completed.length;
+  document.getElementById('challenge-count').textContent = gameState.completed.length;
+  document.getElementById('skipped-count').textContent = gameState.skipped.length;
+  document.getElementById('stat-calc').textContent = gameState.stats.calc;
+  document.getElementById('stat-space').textContent = gameState.stats.space;
+  document.getElementById('stat-logic').textContent = gameState.stats.logic;
+  document.getElementById('stat-reverse').textContent = gameState.stats.reverse;
+  document.getElementById('stat-resist').textContent = gameState.stats.resist;
+  
+  let title = '算术见习生';
+  if (gameState.completed.length >= 12) title = '欧几里得传人';
+  else if (gameState.completed.length >= 9) title = '几何炼金术士';
+  else if (gameState.completed.length >= 5) title = '代数小能手';
+  document.getElementById('title-display').textContent = title;
+}
+
+function drawRadarChart() {
+  const canvas = document.getElementById('radarCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  const cx = w / 2, cy = h / 2;
+  const r = Math.min(w, h) / 2 - 40;
+  ctx.clearRect(0, 0, w, h);
+  const labels = ['计算爆发力', '空间想象力', '逻辑推理力', '逆向思维', '抗挫折力'];
+  const values = [gameState.stats.calc, gameState.stats.space, gameState.stats.logic, gameState.stats.reverse, gameState.stats.resist];
+  const n = labels.length;
+  
+  for (let level = 1; level <= 5; level++) {
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)'; ctx.lineWidth = 1; ctx.beginPath();
+    for (let i = 0; i <= n; i++) {
+      const angle = (Math.PI * 2 * i / n) - Math.PI / 2;
+      const lr = r * level / 5;
+      const x = cx + lr * Math.cos(angle), y = cy + lr * Math.sin(angle);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+  
+  for (let i = 0; i < n; i++) {
+    const angle = (Math.PI * 2 * i / n) - Math.PI / 2;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)'; ctx.beginPath();
+    ctx.moveTo(cx, cy); ctx.lineTo(cx + r * Math.cos(angle), cy + r * Math.sin(angle)); ctx.stroke();
+    const lx = cx + (r + 25) * Math.cos(angle), ly = cy + (r + 25) * Math.sin(angle);
+    ctx.fillStyle = '#fbbf24'; ctx.font = '14px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(labels[i], lx, ly);
+  }
+  
+  ctx.fillStyle = 'rgba(251, 191, 36, 0.3)'; ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 2;
+  ctx.beginPath();
+  for (let i = 0; i <= n; i++) {
+    const idx = i % n;
+    const angle = (Math.PI * 2 * idx / n) - Math.PI / 2;
+    const vr = r * values[idx] / 100;
+    const x = cx + vr * Math.cos(angle), y = cy + vr * Math.sin(angle);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  
+  for (let i = 0; i < n; i++) {
+    const angle = (Math.PI * 2 * i / n) - Math.PI / 2;
+    const vr = r * values[i] / 100;
+    const x = cx + vr * Math.cos(angle), y = cy + vr * Math.sin(angle);
+    ctx.fillStyle = '#f472b6'; ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2); ctx.fill();
+  }
+}
+
+init();
+window.addEventListener('resize', () => {
+  if (document.getElementById('page-profile').classList.contains('active')) drawRadarChart();
+});
+</script>
+</body>
+</html>
