@@ -332,6 +332,61 @@ export function drawRadarChart(canvas, stats) {
 }
 
 /**
+ * 渲染测试题目（选择题）
+ * @param {HTMLElement} container - 容器元素
+ * @param {Array} questions - 题目数组
+ */
+export function renderQuiz(container, questions) {
+  if (!container) return;
+
+  if (!questions || questions.length === 0) {
+    container.innerHTML = '<p style="color: #c7d2fe; text-align: center;">暂无题目</p>';
+    return;
+  }
+
+  const quizHtml = questions.map((q, i) => `
+    <div class="quiz-question" data-q="${i}">
+      <div class="quiz-q-num" style="color: #fbbf24; font-weight: bold; margin-bottom: 0.5rem; font-size: 0.95rem;">
+        第 ${i + 1} 题
+      </div>
+      <div class="quiz-q-text" style="color: #e0e7ff; font-size: 1.05rem; line-height: 1.6; margin-bottom: 0.75rem;">
+        ${escapeHtml(q.q)}
+      </div>
+      <div class="quiz-options" style="display: flex; flex-direction: column; gap: 0.5rem;">
+        ${q.options.map((opt, j) => `
+          <label class="quiz-option" data-q="${i}" data-opt="${j}"
+                 style="display: flex; align-items: center; gap: 0.6rem; padding: 0.65rem 1rem;
+                        background: rgba(99, 102, 241, 0.15); border-radius: 10px; cursor: pointer;
+                        transition: background 0.2s, border-color 0.2s; border: 2px solid transparent;
+                        color: #c7d2fe; font-size: 0.95rem;"
+                 onmouseenter="this.style.background='rgba(99, 102, 241, 0.3)'"
+                 onmouseleave="this.style.background=this.classList.contains('selected')?'rgba(251, 191, 36, 0.25)':'rgba(99, 102, 241, 0.15)'">
+            <input type="radio" name="quiz-q${i}" value="${j}"
+                   style="accent-color: #fbbf24; width: 16px; height: 16px; cursor: pointer;"
+                   onchange="var p=this.parentElement;p.parentElement.querySelectorAll('.quiz-option').forEach(function(el){el.classList.remove('selected');el.style.background='rgba(99, 102, 241, 0.15)';el.style.borderColor='transparent'});p.classList.add('selected');p.style.background='rgba(251, 191, 36, 0.25)';p.style.borderColor='#fbbf24'">
+            <span>${String.fromCharCode(65 + j)}. ${escapeHtml(opt)}</span>
+          </label>
+        `).join('')}
+      </div>
+      <div class="quiz-feedback" id="quiz-fb-${i}" style="margin-top: 0.5rem; padding: 0.5rem 0.75rem; border-radius: 8px; display: none;"></div>
+    </div>
+  `).join('');
+
+  container.innerHTML = `
+    <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(251, 191, 36, 0.3);">
+      <h3 style="color: #fbbf24; margin-bottom: 1.5rem; text-align: center; font-size: 1.3rem;">📝 闯关测试</h3>
+      ${quizHtml}
+      <div style="text-align: center; margin-top: 1.5rem;">
+        <button class="action-btn primary" id="quiz-submit-btn" style="font-size: 1.1rem; padding: 0.8rem 2rem;">
+          ✅ 提交答案
+        </button>
+      </div>
+      <div id="quiz-result" style="text-align: center; margin-top: 1rem; min-height: 2rem;"></div>
+    </div>
+  `;
+}
+
+/**
  * 显示模态框
  * @param {string} content - 模态框内容 HTML
  * @param {Function} onClose - 关闭回调

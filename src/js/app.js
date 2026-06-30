@@ -4,13 +4,15 @@
  */
 
 import { GALAXIES, GAME_CONFIG, createInitialGameState } from './data.js';
+import { QUESTIONS } from './questions.js';
 import { saveGame, loadGame, autoSave } from './storage.js';
-import { 
-  createStars, 
-  renderGalaxyMap, 
-  renderAchievements, 
+import {
+  createStars,
+  renderGalaxyMap,
+  renderAchievements,
   renderMonsters,
   renderVideos,
+  renderQuiz,
   updateStatsDisplay,
   drawRadarChart,
   showModal,
@@ -44,6 +46,7 @@ function init() {
   window.showSkipModal = showSkipModal;
   window.confirmSkip = confirmSkip;
   window.completeChallenge = completeChallenge;
+  window.submitQuiz = submitQuiz;
   
   console.log('数学星环已初始化 🚀');
 }
@@ -155,14 +158,14 @@ function renderLearningPage(galaxyId) {
         ← 返回星系地图
       </button>
     </div>
-    
+
     <div style="background: rgba(99, 102, 241, 0.2); border-radius: 20px; padding: 2rem; margin-bottom: 2rem;">
       <div style="font-size: 4rem; text-align: center; margin-bottom: 1rem;">${galaxy.icon}</div>
       <h2 style="text-align: center; color: #fbbf24; font-size: 2rem; margin-bottom: 0.5rem;">
         ${escapeHtml(galaxy.name)}
       </h2>
       <p style="text-align: center; color: #c7d2fe; font-size: 1.1rem;">${escapeHtml(galaxy.topic)}</p>
-      
+
       <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(0, 0, 0, 0.3); border-radius: 12px;">
         <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
           <span style="font-size: 2rem;">${galaxy.npc === 'gauss' ? '🧙' : '🦉'}</span>
@@ -173,24 +176,28 @@ function renderLearningPage(galaxyId) {
         </div>
       </div>
     </div>
-    
+
     <div style="text-align: center; margin-bottom: 2rem;">
       <h3 style="color: #fbbf24; margin-bottom: 1rem;">配套教学视频</h3>
       <div id="video-container"></div>
     </div>
-    
-    <div style="text-align: center; margin-top: 2rem;">
-      <button class="action-btn success" 
-              onclick="completeChallenge(${galaxyId}, ${GAME_CONFIG.COINS_PER_CHALLENGE})"
-              style="font-size: 1.2rem; padding: 1rem 2.5rem;">
-        ✨ 完成挑战
-      </button>
-    </div>
+
+    <div id="quiz-container"></div>
   `;
-  
+
   // 渲染视频
   const videoContainer = document.getElementById('video-container');
   renderVideos(videoContainer, galaxyId);
+
+  // 渲染测试题目
+  const quizContainer = document.getElementById('quiz-container');
+  renderQuiz(quizContainer, QUESTIONS[galaxyId]);
+
+  // 绑定提交按钮事件
+  const submitBtn = document.getElementById('quiz-submit-btn');
+  if (submitBtn) {
+    submitBtn.onclick = () => submitQuiz(galaxyId);
+  }
 }
 
 /**
@@ -350,6 +357,75 @@ function completeChallenge(galaxyId, coins) {
   }, 500);
   
   removeFloatingSkip();
+}
+
+/**
+ * 提交答案
+ * @param {number} galaxyId - 星系 ID
+ */
+function submitQuiz(galaxyId) {
+  const questions = QUESTIONS[galaxyId];
+  if (!questions) return;
+
+  const resultEl = document.getElementById('quiz-result');
+  const submitBtn = document.getElementById('quiz-submit-btn');
+  if (!resultEl || !submitBtn) return;
+
+  let allAnswered = true;
+  let allCorrect = true;
+  let correctCount = 0;
+
+  questions.forEach((q, i) => {
+    const selected = document.querySelector(`input[name="quiz-q${i}"]:checked`);
+    const fbEl = document.getElementById(`quiz-fb-${i}`);
+    if (!fbEl) return;
+
+    if (!selected) {
+      allAnswered = false;
+      fbEl.style.display = 'block';
+      fbEl.innerHTML = '⚠️ 请选择答案';
+      fbEl.style.background = 'rgba(251, 191, 36, 0.2)';
+      fbEl.style.color = '#fbbf24';
+      return;
+    }
+
+    const userAnswer = parseInt(selected.value);
+    const isCorrect = userAnswer === q.answer;
+    if (isCorrect) correctCount++;
+    else allCorrect = false;
+
+    fbEl.style.display = 'block';
+    if (isCorrect) {
+      fbEl.innerHTML = '✅ 正确！' + escapeHtml(q.explain);
+      fbEl.style.background = 'rgba(16, 185, 129, 0.15)';
+      fbEl.style.color = '#34d399';
+    } else {
+      const correctLabel = String.fromCharCode(65 + q.answer);
+      fbEl.innerHTML = `❌ 错误。正确答案是 <strong>${correctLabel}. ${escapeHtml(q.options[q.answer])}</strong><br><span style="font-size: 0.9rem;">${escapeHtml(q.explain)}</span>`;
+      fbEl.style.background = 'rgba(239, 68, 68, 0.15)';
+      fbEl.style.color = '#f87171';
+    }
+  });
+
+  if (!allAnswered) {
+    resultEl.innerHTML = '<span style="color: #fbbf24;">请回答所有题目后再提交</span>';
+    return;
+  }
+
+  if (allCorrect) {
+    resultEl.innerHTML = '<span style="color: #34d399; font-size: 1.2rem; font-weight: bold;">🎉 全部答对！点击下方按钮完成挑战</span>';
+    submitBtn.style.display = 'none';
+
+    // 显示"完成挑战"按钮
+    const wrapper = submitBtn.parentElement;
+    const completeBtn = document.createElement('div');
+    completeBtn.style.textAlign = 'center';
+    completeBtn.style.marginTop = '0.5rem';
+    completeBtn.innerHTML = `<button class="action-btn success" onclick="completeChallenge(${galaxyId}, ${GAME_CONFIG.COINS_PER_CHALLENGE})" style="font-size: 1.2rem; padding: 1rem 2.5rem;">✨ 完成挑战</button>`;
+    wrapper.appendChild(completeBtn);
+  } else {
+    resultEl.innerHTML = `<span style="color: #fbbf24;">答对 <strong>${correctCount}</strong>/5 题，请修正错误答案后重新提交</span>`;
+  }
 }
 
 /**
