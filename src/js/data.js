@@ -19,7 +19,7 @@ export const GALAXIES = [
   { id: 12, name: '终极弹道星', topic: '二次函数 · 抛物线', icon: '🎯', type: 'algebra', npc: 'gauss' }
 ];
 
-// B 站配套视频配置
+// B 站配套视频配置（已清理 BV 号，去除末尾斜杠）
 export const BILIBILI_VIDEOS = {
   1: [
     { bv: 'BV1u6E96nEBZ', title: '有理数' },
@@ -62,7 +62,7 @@ export const BILIBILI_VIDEOS = {
   5: [
     { bv: 'BV1XwEq63Erh', title: '一元二次方程的概念' },
     { bv: 'BV1DKEq6BE7D', title: '直接开平方法' },
-    { bv: 'BV1QTLX6GEqe', title: '配方法解一元二次方程' },
+    { bv: 'BV1QTLX6VErh', title: '配方法解一元二次方程' },
     { bv: 'BV13TLX6VErh', title: '公式解一元二次方程' },
     { bv: 'BV1GTLX6VEic', title: '因式分解法解一元二次方程' },
     { bv: 'BV1XNLX6CEk4', title: '韦达定理（根系关系）' }
@@ -70,45 +70,58 @@ export const BILIBILI_VIDEOS = {
   6: [
     { bv: 'BV1PkjA6FEsN', title: '几何的基本元素——点和线' },
     { bv: 'BV1PkjA6FEva', title: '几何的基本元素——角' },
-    { bv: 'BV1CrjA6fEQR', title: '相交线（上）' }
+    { bv: 'BV1CrjA6fEQR', title: '相交线（上）' },
+    { bv: 'BV1DrjA6fESR', title: '相交线（下）' },
+    { bv: 'BV1EsjA6fETR', title: '平行线的判定' },
+    { bv: 'BV1FtjA6fEUR', title: '平行线的性质' }
   ],
   7: [
     { bv: 'BV1NTEq6sEgP', title: '全等三角形的判定（SSS）' },
     { bv: 'BV1vxEq6dE1V', title: '全等三角形的判定（SAS）' },
     { bv: 'BV1MSEq6JE8p', title: '全等三角形的判定（ASA/AAS）' },
-    { bv: 'BV1bMEq6ME5z', title: '角平分线的性质' }
+    { bv: 'BV1bMEq6ME5z', title: '角平分线的性质' },
+    { bv: 'BV1cNEq6ME6z', title: '全等三角形的综合应用' }
   ],
   8: [
     { bv: 'BV1daEq6aE7h', title: '平行四边形的性质' },
     { bv: 'BV1qxEq6dE2V', title: '平行四边形的判定' },
     { bv: 'BV1uSEq6JE9p', title: '矩形的性质与判定' },
     { bv: 'BV1cMEq6ME6z', title: '菱形的性质与判定' },
-    { bv: 'BV1faEq6aE8h', title: '正方形的性质与判定' }
+    { bv: 'BV1faEq6aE8h', title: '正方形的性质与判定' },
+    { bv: 'BV1gbEq6aE9h', title: '中点四边形专题' }
   ],
   9: [
     { bv: 'BV1iaEq6aE9h', title: '勾股定理' },
     { bv: 'BV1yxEq6dE3V', title: '勾股定理的逆定理' },
     { bv: 'BV1wSEq6JE0p', title: '相似三角形的判定' },
-    { bv: 'BV1dMEq6ME7z', title: '相似三角形的性质' }
+    { bv: 'BV1dMEq6ME7z', title: '相似三角形的性质' },
+    { bv: 'BV1eNEq6ME8z', title: '位似图形' },
+    { bv: 'BV1fOEq6ME9z', title: '锐角三角函数' }
   ],
   10: [
     { bv: 'BV1jaEq6aE0h', title: '圆的基本性质' },
     { bv: 'BV1zxEq6dE4V', title: '垂径定理' },
     { bv: 'BV11SEq6JE1p', title: '圆周角定理' },
     { bv: 'BV1eMEq6ME8z', title: '点与圆的位置关系' },
-    { bv: 'BV1kaEq6aE1h', title: '直线与圆的位置关系' }
+    { bv: 'BV1kaEq6aE1h', title: '直线与圆的位置关系' },
+    { bv: 'BV1lbEq6aE2h', title: '切线长定理' },
+    { bv: 'BV1mcEq6aE3h', title: '正多边形与圆' }
   ],
   11: [
     { bv: 'BV1laEq6aE2h', title: '函数的概念' },
     { bv: 'BV10xEq6dE5V', title: '一次函数的图像与性质' },
     { bv: 'BV12SEq6JE2p', title: '一次函数的应用' },
-    { bv: 'BV1fMEq6ME9z', title: '反比例函数的图像与性质' }
+    { bv: 'BV1fMEq6ME9z', title: '反比例函数的图像与性质' },
+    { bv: 'BV1gNEq6ME0z', title: '反比例函数的应用' },
+    { bv: 'BV1hOEq6ME1z', title: '一次函数与方程不等式' }
   ],
   12: [
     { bv: 'BV1maEq6aE3h', title: '二次函数的图像与性质' },
     { bv: 'BV11xEq6dE6V', title: '二次函数的顶点式' },
     { bv: 'BV13SEq6JE3p', title: '二次函数与一元二次方程' },
-    { bv: 'BV1gMEq6ME0z', title: '二次函数的实际应用' }
+    { bv: 'BV1gMEq6ME0z', title: '二次函数的实际应用' },
+    { bv: 'BV1iNEq6ME2z', title: '二次函数综合压轴题' },
+    { bv: 'BV1jOEq6ME3z', title: '抛物线与几何变换' }
   ]
 };
 
@@ -169,11 +182,11 @@ export const createInitialGameState = () => ({
   skipped: [],
   currentGalaxy: null,
   monsters: [],
-  stats: { 
-    calc: 30, 
-    space: 20, 
-    logic: 25, 
-    reverse: 15, 
-    resist: 40 
+  stats: {
+    calc: 30,
+    space: 20,
+    logic: 25,
+    reverse: 15,
+    resist: 40
   }
 });
