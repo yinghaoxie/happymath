@@ -320,7 +320,7 @@ function renderLearningPage(galaxyId) {
   const mathQuote = MATH_QUOTES[Math.floor(Math.random() * MATH_QUOTES.length)];
 
   content.innerHTML = `
-    <div style="position: sticky; top: 0; z-index: 100; background: linear-gradient(135deg, rgba(15,23,42,0.95), rgba(30,27,75,0.95)); backdrop-filter: blur(8px); border-bottom: 1px solid rgba(99,102,241,0.2); padding: 0.5rem 0.75rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.75rem;">
+    <div style="position: sticky; top: 0; z-index: 100; background: linear-gradient(135deg, rgba(15,23,42,0.95), rgba(30,27,75,0.95)); backdrop-filter: blur(8px); border-bottom: 1px solid rgba(99,102,241,0.2); padding: 0.4rem 0.75rem; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.6rem;">
       <button class="back-btn" onclick="showPage('map')" aria-label="返回地图" style="flex-shrink: 0;">
         ← 返回
       </button>
@@ -334,19 +334,19 @@ function renderLearningPage(galaxyId) {
 
     <div class="learning-layout">
       <div class="learning-main">
-        <div style="background: rgba(99, 102, 241, 0.2); border-radius: 12px; padding: 0.5rem 0.75rem; margin-bottom: 0.5rem;">
-          <p style="text-align: center; color: #e2e8f0; font-size: 1rem;">${escapeHtml(galaxy.topic)}</p>
+        <div style="background: rgba(99, 102, 241, 0.2); border-radius: 12px; padding: 0.4rem 0.75rem; margin-bottom: 0.4rem;">
+          <p style="text-align: center; color: #e2e8f0; font-size: 1.15rem;">${escapeHtml(galaxy.topic)}</p>
 
-          <div id="math-quote-area" style="margin: 0.8rem auto 0; max-width: 480px; padding: 0.75rem 1rem; background: linear-gradient(135deg, rgba(251, 191, 36, 0.10), rgba(251, 191, 36, 0.03)); border: 1px solid rgba(251, 191, 36, 0.25); border-radius: 10px; text-align: center;">
-            <div style="color: #d4a574; font-size: 1.05rem; line-height: 1.7; font-family: 'Ma Shan Zheng', cursive;">
+          <div id="math-quote-area" style="margin: 0.5rem auto 0; max-width: 480px; padding: 0.5rem 0.8rem; background: linear-gradient(135deg, rgba(251, 191, 36, 0.10), rgba(251, 191, 36, 0.03)); border: 1px solid rgba(251, 191, 36, 0.25); border-radius: 10px; text-align: center;">
+            <div style="color: #d4a574; font-size: 1.2rem; line-height: 1.8; font-family: 'Ma Shan Zheng', cursive;">
               <span>${escapeHtml(mathQuote.quote)}</span>
-              <span style="display: block; margin-top: 0.15rem; font-size: 0.85rem; color: rgba(212, 165, 116, 0.55);">—— ${escapeHtml(mathQuote.author)}</span>
+              <span style="display: block; margin-top: 0.15rem; font-size: 0.9rem; color: rgba(212, 165, 116, 0.55);">—— ${escapeHtml(mathQuote.author)}</span>
             </div>
           </div>
         </div>
 
         <div style="text-align: center;">
-          <h3 style="color: #fbbf24; margin-bottom: 0.75rem; font-size: 1.3rem;">善问好学 自学视频</h3>
+          <h3 style="color: #fbbf24; margin-bottom: 0.4rem; font-size: 1.3rem;">善问好学 自学视频</h3>
           <div id="video-container"></div>
         </div>
 

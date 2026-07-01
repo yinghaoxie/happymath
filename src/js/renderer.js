@@ -500,8 +500,8 @@ export function renderQuiz(container, questions, galaxyId) {
 
   // 骨架
   container.innerHTML = `
-    <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(251, 191, 36, 0.3);">
-      <h3 style="color: #fbbf24; margin-bottom: 1.5rem; text-align: center; font-size: 1.3rem;">📝 突破知识边界</h3>
+    <div style="margin-top: 1.2rem; padding-top: 1rem; border-top: 1px solid rgba(251, 191, 36, 0.3);">
+      <h3 style="color: #fbbf24; margin-bottom: 0.8rem; text-align: center; font-size: 1.3rem;">📝 突破知识边界</h3>
       <!-- 顶部状态栏：连击 -->
       <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.8rem; padding: 0 0.5rem;">
         <div></div>
@@ -542,7 +542,7 @@ export function renderQuiz(container, questions, galaxyId) {
 
     cardArea.innerHTML = `
       <div class="quiz-card-slide" style="animation: quizFadeIn 0.3s ease;">
-        <div style="background: rgba(99, 102, 241, 0.12); border-radius: 16px; padding: 1.5rem 1.8rem;
+        <div style="background: rgba(99, 102, 241, 0.12); border-radius: 16px; padding: 1rem 1.2rem;
                     border: 2px solid ${isBoss ? 'rgba(251, 191, 36, 0.5)' : 'rgba(251, 191, 36, 0.2)'};
                     ${isBoss ? 'box-shadow: 0 0 25px rgba(251, 191, 36, 0.15), inset 0 0 20px rgba(251, 191, 36, 0.05);' : ''}">
           ${isBoss ? '<div style="text-align:center;font-size:1.6rem;margin-bottom:0.5rem;">👑 BOSS 关卡</div>' : ''}
@@ -555,7 +555,7 @@ export function renderQuiz(container, questions, galaxyId) {
               ${state.answered ? (state.isCorrect ? '✅ 答对了' : '❌ 答错了') : '⏳ 请作答'}
             </span>
           </div>
-          <div style="color: #e0e7ff; font-size: 1.1rem; line-height: 1.7; margin-bottom: 1rem; font-weight: 500;">
+          <div style="color: #e0e7ff; font-size: 1.25rem; line-height: 1.8; margin-bottom: 1rem; font-weight: 500;">
             ${escapeHtml(q.q)}
           </div>
           <div class="quiz-options" id="quiz-options-area" style="display: flex; flex-direction: column; gap: 0.6rem;">
@@ -577,9 +577,9 @@ export function renderQuiz(container, questions, galaxyId) {
                        style="display: flex; align-items: center; gap: 0.7rem; padding: 0.7rem 1rem;
                               background: ${bg}; border-radius: 12px; cursor: ${pointerEv};
                               transition: background 0.2s, border-color 0.2s, transform 0.15s;
-                              border: 2px solid ${border}; color: #e2e8f0; font-size: 1rem;">
+                              border: 2px solid ${border}; color: #e2e8f0; font-size: 1.1rem;">
                   <input type="radio" name="quiz-current" value="${j}" ${checked}
-                         style="accent-color: #fbbf24; width: 18px; height: 18px; cursor: ${pointerEv}; flex-shrink: 0;">
+                         style="accent-color: #fbbf24; width: 20px; height: 20px; cursor: ${pointerEv}; flex-shrink: 0;">
                   <span style="flex:1;">${String.fromCharCode(65 + j)}. ${escapeHtml(opt)}</span>
                   ${state.answered && state.isCorrect && j === q.answer ? '<span style="font-size:1.1rem;">✅</span>' : ''}
                   ${state.answered && isSelected && !state.isCorrect ? '<span style="font-size:1.1rem;">❌</span>' : ''}
@@ -605,10 +605,10 @@ export function renderQuiz(container, questions, galaxyId) {
             ${q.type !== 'numberline' ? `
             <div style="margin-top: 0.8rem; padding: 0.7rem 0.9rem; border-radius: 10px;
                         background: ${state.isCorrect ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'};
-                        color: ${state.isCorrect ? '#34d399' : '#f87171'}; font-size: 0.9rem; line-height: 1.5;">
+                        color: ${state.isCorrect ? '#34d399' : '#f87171'}; font-size: 0.95rem; line-height: 1.6;">
               ${state.isCorrect
-                ? '✅ 答对啦！思维清晰，保持这个节奏！<br><span style="color:#94a3b8;font-size:0.85rem;">' + escapeHtml(q.explain) + '</span>'
-                : '❌ 答错了，再想想！<br><span style="color:#fbbf24;font-size:0.85rem;">💡 仔细审题，你一定能找到正确答案！</span>'}
+                ? '✅ 答对啦！思维清晰，保持这个节奏！<br><span style="color:#94a3b8;font-size:0.9rem;">' + escapeHtml(q.explain) + '</span>'
+                : '❌ 答错了，再想想！<br><span style="color:#fbbf24;font-size:0.9rem;">💡 仔细审题，你一定能找到正确答案！</span>'}
             </div>
             ` : ''}
             ${state.answered && !state.isCorrect ? `
