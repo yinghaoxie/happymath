@@ -505,7 +505,7 @@ body {
 
 /* 学习页面 */
 .learning-page {
-  max-width: 720px;
+  max-width: 960px;
   margin: 0 auto;
   padding: 1rem 1.5rem;
 }
@@ -1171,4 +1171,298 @@ body::before {
 /* 居中弹窗（知识点提示、AI 解析等可交互弹窗）允许点击 */
 .knowledge-popup[style*="top: 50%"] {
   pointer-events: auto;
+}
+
+/* 🎨 数轴交互 Canvas 容器 */
+#quiz-options-area canvas {
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.15), inset 0 0 30px rgba(99, 102, 241, 0.05);
+  transition: box-shadow 0.3s ease;
+}
+
+#quiz-options-area canvas:hover {
+  box-shadow: 0 6px 30px rgba(99, 102, 241, 0.25), inset 0 0 30px rgba(99, 102, 241, 0.08);
+}
+
+/* 数轴提交按钮悬停效果 */
+#quiz-options-area button:hover {
+  background: rgba(251,191,36,0.2) !important;
+  transform: translateY(-1px);
+}
+
+#quiz-options-area button:active {
+  transform: translateY(0px);
+}
+
+/* ========================================
+   🌟 "你知道吗" 知识侧边栏
+   ======================================== */
+
+/* 双栏布局容器 */
+.learning-layout {
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-start;
+}
+
+.learning-main {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ===== 跑马灯侧边栏 ===== */
+
+.learning-sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  align-self: flex-start;
+  max-height: calc(100vh - 6rem);
+  overflow-y: auto;
+}
+
+/* 侧边栏头部 */
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1rem;
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(251, 191, 36, 0.05));
+  border: 1px solid rgba(251, 191, 36, 0.25);
+  border-radius: 12px 12px 0 0;
+  font-size: 1rem;
+  color: #fbbf24;
+  font-weight: bold;
+  cursor: default;
+}
+
+.sidebar-header .sidebar-icon {
+  font-size: 1.2rem;
+}
+
+.marquee-counter {
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: normal;
+}
+
+/* 跑马灯视口 */
+.marquee-viewport {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(99, 102, 241, 0.15);
+  border-top: none;
+  padding: 0.9rem 1rem;
+  min-height: 200px;
+  cursor: default;
+  transition: background 0.2s;
+}
+
+.marquee-viewport-inner {
+  animation: marqueeFadeIn 0.45s ease;
+}
+
+@keyframes marqueeFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.marquee-category {
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.5rem;
+  opacity: 0.85;
+  text-transform: uppercase;
+}
+
+.marquee-label {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fbbf24;
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+}
+
+.marquee-text {
+  font-size: 0.9rem;
+  color: #94a3b8;
+  line-height: 1.75;
+}
+
+/* 跑马灯底部栏 */
+.marquee-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem 0.8rem;
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid rgba(99, 102, 241, 0.15);
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  margin-bottom: 1rem;
+}
+
+.marquee-btn {
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: 6px;
+  background: rgba(99, 102, 241, 0.1);
+  color: #94a3b8;
+  font-size: 0.78rem;
+  cursor: pointer;
+  padding: 0.3rem 0.7rem;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.marquee-btn:hover {
+  background: rgba(99, 102, 241, 0.25);
+  color: #e2e8f0;
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
+.marquee-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* AI 搜索按钮 */
+.marquee-ai-btn {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(59, 130, 246, 0.15));
+  border-color: rgba(139, 92, 246, 0.35);
+  color: #a78bfa;
+  font-weight: 600;
+}
+
+.marquee-ai-btn:hover {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.35), rgba(59, 130, 246, 0.25));
+  border-color: rgba(139, 92, 246, 0.5);
+  color: #c4b5fd;
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.15);
+}
+
+/* AI 搜索弹窗 */
+.marquee-ai-panel {
+  background: rgba(15, 23, 42, 0.98);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 0 0 1rem;
+  animation: marqueeFadeIn 0.3s ease;
+}
+
+.marquee-ai-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 1rem;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(59, 130, 246, 0.1));
+  border-bottom: 1px solid rgba(139, 92, 246, 0.15);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #c4b5fd;
+}
+
+.marquee-ai-close {
+  background: none;
+  border: none;
+  color: #64748b;
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0.2rem;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.marquee-ai-close:hover {
+  color: #e2e8f0;
+}
+
+.marquee-ai-body {
+  padding: 0.8rem 1rem;
+}
+
+.marquee-ai-hint {
+  font-size: 0.82rem;
+  color: #94a3b8;
+  margin-bottom: 0.6rem;
+  line-height: 1.5;
+}
+
+.marquee-ai-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.marquee-ai-links a {
+  display: block;
+  padding: 0.45rem 0.7rem;
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.15);
+  border-radius: 6px;
+  color: #93c5fd;
+  font-size: 0.82rem;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.marquee-ai-links a:hover {
+  background: rgba(99, 102, 241, 0.18);
+  border-color: rgba(99, 102, 241, 0.3);
+  color: #bfdbfe;
+}
+
+.marquee-ai-tip {
+  margin-top: 0.5rem;
+  font-size: 0.72rem;
+  color: #475569;
+  text-align: center;
+}
+
+/* 圆点指示器 */
+.marquee-dots {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: center;
+  flex: 1;
+  margin: 0 0.3rem;
+}
+
+.marquee-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(148, 163, 184, 0.3);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+}
+
+.marquee-dot.active {
+  width: 18px;
+  border-radius: 3px;
+  background: rgba(251, 191, 36, 0.7);
+}
+
+.marquee-dot:hover {
+  background: rgba(148, 163, 184, 0.6);
+}
+
+/* 📱 移动端侧边栏响应式 */
+@media (max-width: 768px) {
+  .learning-layout {
+    flex-direction: column;
+  }
+
+  .learning-sidebar {
+    width: 100%;
+    position: static;
+    margin-top: 0.5rem;
+  }
 }

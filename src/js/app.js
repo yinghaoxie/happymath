@@ -24,7 +24,8 @@ import {
   showModal,
   escapeHtml,
   showKnowledgeHint,
-  aiSearchAnswer
+  aiSearchAnswer,
+  renderKnowledgeSidebar
 } from './renderer.js';
 
 import { MILESTONES, MATH_QUOTES } from './data.js';
@@ -48,6 +49,7 @@ function init() {
   const saved = loadGame();
   if (saved) {
     gameState = { ...createInitialGameState(), ...saved };
+    window.gameState = gameState; // 同步 window 引用（init 前赋值的 window.gameState 已是旧对象）
   }
 
   // 显示玩家姓名
@@ -330,24 +332,36 @@ function renderLearningPage(galaxyId) {
 
     <div id="combo-container" style="text-align: center; margin-bottom: 0.5rem;"></div>
 
-    <div style="background: rgba(99, 102, 241, 0.2); border-radius: 12px; padding: 0.5rem 0.75rem; margin-bottom: 0.5rem;">
-      <p style="text-align: center; color: #e2e8f0; font-size: 1rem;">${escapeHtml(galaxy.topic)}</p>
+    <div class="learning-layout">
+      <div class="learning-main">
+        <div style="background: rgba(99, 102, 241, 0.2); border-radius: 12px; padding: 0.5rem 0.75rem; margin-bottom: 0.5rem;">
+          <p style="text-align: center; color: #e2e8f0; font-size: 1rem;">${escapeHtml(galaxy.topic)}</p>
 
-      <div id="math-quote-area" style="margin: 0.8rem auto 0; max-width: 480px; padding: 0.75rem 1rem; background: linear-gradient(135deg, rgba(251, 191, 36, 0.10), rgba(251, 191, 36, 0.03)); border: 1px solid rgba(251, 191, 36, 0.25); border-radius: 10px; text-align: center;">
-        <div style="color: #d4a574; font-size: 1.05rem; line-height: 1.7; font-family: 'Ma Shan Zheng', cursive;">
-          <span>${escapeHtml(mathQuote.quote)}</span>
-          <span style="display: block; margin-top: 0.15rem; font-size: 0.85rem; color: rgba(212, 165, 116, 0.55);">—— ${escapeHtml(mathQuote.author)}</span>
+          <div id="math-quote-area" style="margin: 0.8rem auto 0; max-width: 480px; padding: 0.75rem 1rem; background: linear-gradient(135deg, rgba(251, 191, 36, 0.10), rgba(251, 191, 36, 0.03)); border: 1px solid rgba(251, 191, 36, 0.25); border-radius: 10px; text-align: center;">
+            <div style="color: #d4a574; font-size: 1.05rem; line-height: 1.7; font-family: 'Ma Shan Zheng', cursive;">
+              <span>${escapeHtml(mathQuote.quote)}</span>
+              <span style="display: block; margin-top: 0.15rem; font-size: 0.85rem; color: rgba(212, 165, 116, 0.55);">—— ${escapeHtml(mathQuote.author)}</span>
+            </div>
+          </div>
         </div>
+
+        <div style="text-align: center;">
+          <h3 style="color: #fbbf24; margin-bottom: 0.75rem; font-size: 1.3rem;">善问好学 自学视频</h3>
+          <div id="video-container"></div>
+        </div>
+
+        <div id="quiz-container"></div>
       </div>
-    </div>
 
-    <div style="text-align: center;">
-      <h3 style="color: #fbbf24; margin-bottom: 0.75rem; font-size: 1.3rem;">善问好学 自学视频</h3>
-      <div id="video-container"></div>
+      <aside class="learning-sidebar" id="learning-sidebar">
+        <!-- 由 renderKnowledgeSidebar 渲染 -->
+      </aside>
     </div>
-
-    <div id="quiz-container"></div>
   `;
+
+  // 渲染侧边栏知识
+  const sidebar = document.getElementById('learning-sidebar');
+  if (sidebar) renderKnowledgeSidebar(sidebar, galaxyId);
 
   // 渲染视频
   const videoContainer = document.getElementById('video-container');

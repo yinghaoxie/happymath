@@ -5,8 +5,8 @@
 
 export const QUESTIONS = {
   1: [
-    { q: '下列哪个数是有理数？', options: ['π', '√2', '0.5', 'e'], answer: 2, explain: '0.5 可以写成分数 1/2，是有理数。' },
-    { q: '|-5| 等于多少？', options: ['-5', '5', '0', '±5'], answer: 1, explain: '绝对值表示数轴上的距离，-5 到原点的距离是 5。' },
+    { q: '请在数轴上找到 3 的位置，点击对应数字', type: 'numberline', axisMin: -5, axisMax: 5, tickStep: 1, answer: 3, explain: '3 在数轴上位于原点右侧 3 个单位长度处。数轴上的数字越往右越大。' },
+    { q: '请在数轴上找到 -2 的位置，点击对应数字', type: 'numberline', axisMin: -5, axisMax: 5, tickStep: 1, answer: -2, explain: '-2 在数轴上位于原点左侧 2 个单位长度处。负数在原点左边，越往左越小。' },
     { q: '数轴上，-3 和 2 之间的距离是多少？', options: ['1', '5', '-5', '-1'], answer: 1, explain: '两点距离 = |2 - (-3)| = |5| = 5。' },
     { q: '|-7| 的相反数是多少？', options: ['7', '-7', '0', '1/7'], answer: 1, explain: '|-7| = 7，7 的相反数是 -7。' },
     { q: '√9 等于多少？', options: ['3', '±3', '9', '3²'], answer: 0, explain: '√9 表示 9 的算术平方根，取正值，即 3。' },

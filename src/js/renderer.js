@@ -3,7 +3,9 @@
  * 处理 DOM 渲染和更新操作
  */
 
-import { GALAXIES, BILIBILI_VIDEOS, ACHIEVEMENTS } from './data.js';
+import { GALAXIES, BILIBILI_VIDEOS, ACHIEVEMENTS, KNOWLEDGE_SIDEBAR } from './data.js';
+import { autoSave } from './storage.js';
+import { renderNumberLine } from './interactive.js';
 
 /**
  * 安全转义 HTML 防止 XSS
@@ -556,8 +558,10 @@ export function renderQuiz(container, questions, galaxyId) {
           <div style="color: #e0e7ff; font-size: 1.1rem; line-height: 1.7; margin-bottom: 1rem; font-weight: 500;">
             ${escapeHtml(q.q)}
           </div>
-          <div class="quiz-options" style="display: flex; flex-direction: column; gap: 0.6rem;">
-            ${q.options.map((opt, j) => {
+          <div class="quiz-options" id="quiz-options-area" style="display: flex; flex-direction: column; gap: 0.6rem;">
+            ${q.type === 'numberline'
+              ? '' // 交互题选项由 renderNumberLine 动态渲染
+              : q.options.map((opt, j) => {
               const isSelected = state.selected === j;
               let bg = 'rgba(99, 102, 241, 0.15)';
               let border = 'transparent';
@@ -597,7 +601,8 @@ export function renderQuiz(container, questions, galaxyId) {
                 🤖 AI 搜寻答案
               </button>
             </div>` : ''}
-          ${state.answered ? `
+          ${state.answered && (q.type !== 'numberline' || !state.isCorrect) ? `
+            ${q.type !== 'numberline' ? `
             <div style="margin-top: 0.8rem; padding: 0.7rem 0.9rem; border-radius: 10px;
                         background: ${state.isCorrect ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'};
                         color: ${state.isCorrect ? '#34d399' : '#f87171'}; font-size: 0.9rem; line-height: 1.5;">
@@ -605,6 +610,7 @@ export function renderQuiz(container, questions, galaxyId) {
                 ? '✅ 答对啦！思维清晰，保持这个节奏！<br><span style="color:#94a3b8;font-size:0.85rem;">' + escapeHtml(q.explain) + '</span>'
                 : '❌ 答错了，再想想！<br><span style="color:#fbbf24;font-size:0.85rem;">💡 仔细审题，你一定能找到正确答案！</span>'}
             </div>
+            ` : ''}
             ${state.answered && !state.isCorrect ? `
               ${state.wrongAttempts < MAX_WRONG_ATTEMPTS ? `
               <div style="display: flex; gap: 0.6rem; margin-top: 0.8rem;">
@@ -635,7 +641,133 @@ export function renderQuiz(container, questions, galaxyId) {
 
     // 未作答时绑定选项事件
     if (!state.answered) {
-      cardArea.querySelectorAll('input[name="quiz-current"]').forEach(r => {
+      if (q.type === 'numberline') {
+        // 交互题渲染
+        const optionsArea = document.getElementById('quiz-options-area');
+        if (optionsArea) {
+          renderNumberLine(optionsArea, q, state, () => {
+            // onSubmit 回调 — 完成后的奖励/连击逻辑
+            if (!challengeActive) return;
+            const isBoss = idx === total - 1;
+
+            // 音效已在交互模块中播放
+
+            // 💰 答对奖 2 逻辑币，答错也奖 1 努力币
+            if (window.gameState) {
+              window.gameState.coins += state.isCorrect ? COINS_CORRECT : COINS_EFFORT;
+              window.gameState.stars += state.isCorrect ? STARS_CORRECT : STARS_EFFORT;
+              if (window.updateStatsDisplay) window.updateStatsDisplay(window.gameState);
+              autoSave(window.gameState);
+            }
+
+            // 🌟 浮动星光动画
+            showFloatingScore(optionsArea, state.isCorrect ? `+${STARS_CORRECT} ⭐` : `+${STARS_EFFORT} ⭐`, state.isCorrect);
+
+            // 💥 屏幕震动（答错）
+            if (!state.isCorrect) {
+              screenShake();
+            }
+
+            // 答错处理 — 记录尝试次数
+            if (!state.isCorrect) {
+              answerState[idx].wrongAttempts++;
+              if (answerState[idx].wrongAttempts >= MAX_WRONG_ATTEMPTS) {
+                if (typeof window.playSound === 'function') {
+                  setTimeout(() => window.playSound('wrong'), 200);
+                }
+                renderQuestion(idx);
+                updateUI();
+                window.__currentQ = q;
+                showModal(`
+                  <div style="text-align:center;">
+                    <div style="font-size:2.5rem;margin-bottom:0.5rem;">💪</div>
+                    <div style="color:#fbbf24;font-size:1.1rem;font-weight:bold;margin-bottom:0.3rem;">这道题有点挑战性呢！</div>
+                    <div style="color:#94a3b8;font-size:0.85rem;margin-bottom:1.2rem;">换个方法，一定能掌握！</div>
+                    <button id="fail-ai-btn" style="display:block;width:100%;padding:0.7rem;margin-bottom:0.6rem;
+                      border-radius:10px;border:none;background:linear-gradient(135deg,#6366f1,#818cf8);
+                      color:#fff;font-size:0.9rem;cursor:pointer;">
+                      🤖 AI 答疑 — 帮你理解这道题
+                    </button>
+                    <button id="fail-video-btn" style="display:block;width:100%;padding:0.7rem;margin-bottom:0.6rem;
+                      border-radius:10px;border:1px solid rgba(251,191,36,0.3);
+                      background:rgba(251,191,36,0.1);color:#fbbf24;font-size:0.9rem;cursor:pointer;">
+                      🎬 看视频学习 — 重温知识点
+                    </button>
+                    <button id="fail-retry-btn" style="display:block;width:100%;padding:0.5rem;
+                      border-radius:8px;border:none;background:transparent;color:#64748b;font-size:0.85rem;cursor:pointer;">
+                      🔄 重新挑战
+                    </button>
+                  </div>
+                `);
+                setTimeout(() => {
+                  const overlay = document.querySelector('.modal-overlay');
+                  if (!overlay) return;
+                  document.getElementById('fail-ai-btn')?.addEventListener('click', () => {
+                    overlay.remove();
+                    aiSearchAnswer(window.__currentQ);
+                  });
+                  document.getElementById('fail-video-btn')?.addEventListener('click', () => {
+                    overlay.remove();
+                    document.getElementById('video-container')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  });
+                  document.getElementById('fail-retry-btn')?.addEventListener('click', () => {
+                    overlay.remove();
+                    if (window.retryQuiz) window.retryQuiz();
+                  });
+                }, 0);
+                return;
+              } else {
+                showKnowledgePopup('答错了，再想想！', 'wrong');
+              }
+            }
+
+            // 🔥 连击系统
+            if (state.isCorrect) {
+              streak++;
+              const streakEl = document.getElementById('quiz-streak-display');
+              let bonusText = '';
+              let bonusCoins = 0;
+              if (streak === 3) { bonusText = '🔥 三连击！'; bonusCoins = 3; }
+              else if (streak === 5) { bonusText = '⚡ 五连绝世！'; bonusCoins = 5; }
+              else if (streak === 10) { bonusText = '🌟 十全十美！'; bonusCoins = 10; }
+              if (bonusCoins > 0 && window.gameState) {
+                window.gameState.coins += bonusCoins;
+                if (window.updateStatsDisplay) window.updateStatsDisplay(window.gameState);
+                autoSave(window.gameState);
+                showFloatingScore(optionsArea, bonusText + ' +' + bonusCoins + ' 🪙', true);
+                if (typeof window.playSound === 'function') window.playSound('perfect');
+                if (typeof window.createConfetti === 'function') window.createConfetti(12);
+              }
+              if (streakEl) {
+                if (streak >= 2) {
+                  const fireIcons = streak >= 5 ? '🔥🔥🔥' : streak >= 3 ? '🔥🔥' : '🔥';
+                  streakEl.textContent = fireIcons + ' ' + streak + ' 连击！';
+                  streakEl.style.color = streak >= 5 ? '#fbbf24' : '#f87171';
+                } else { streakEl.textContent = ''; }
+              }
+            } else {
+              streak = 0;
+              const streakEl = document.getElementById('quiz-streak-display');
+              if (streakEl) streakEl.textContent = '';
+            }
+
+            // 🏆 Boss 题答对 — 额外庆祝
+            if (state.isCorrect && isBoss) {
+              if (typeof window.createConfetti === 'function') window.createConfetti(25);
+              if (typeof window.playSound === 'function') setTimeout(() => window.playSound('perfect'), 150);
+            }
+
+            // 弹窗知识点
+            if (state.isCorrect) {
+              showKnowledgePopup(q.explain, 'correct');
+            }
+
+            renderQuestion(idx);
+            updateUI();
+          });
+        }
+      } else {
+        cardArea.querySelectorAll('input[name="quiz-current"]').forEach(r => {
         r.addEventListener('change', () => {
           if (!challengeActive) return; // 生命耗尽后禁用
           state.answered = true;
@@ -653,6 +785,7 @@ export function renderQuiz(container, questions, galaxyId) {
             window.gameState.coins += state.isCorrect ? COINS_CORRECT : COINS_EFFORT;
             window.gameState.stars += state.isCorrect ? STARS_CORRECT : STARS_EFFORT;
             if (window.updateStatsDisplay) window.updateStatsDisplay(window.gameState);
+            autoSave(window.gameState);
           }
 
           // 🌟 浮动星光动画（每次答题都有星光）
@@ -740,6 +873,7 @@ export function renderQuiz(container, questions, galaxyId) {
             if (bonusCoins > 0 && window.gameState) {
               window.gameState.coins += bonusCoins;
               if (window.updateStatsDisplay) window.updateStatsDisplay(window.gameState);
+              autoSave(window.gameState);
               // 额外浮动奖励
               showFloatingScore(cardArea, bonusText + ' +' + bonusCoins + ' 🪙', true);
               // 连击音效
@@ -785,6 +919,7 @@ export function renderQuiz(container, questions, galaxyId) {
           updateUI();
         });
       });
+      }
     }
 
     // 💡 知识点提示
@@ -997,9 +1132,15 @@ export function showKnowledgeHint(q) {
 export function aiSearchAnswer(q) {
   try {
     console.log('aiSearchAnswer called', q?.q?.substring(0, 30));
-    if (!q || !q.q || !q.options) { console.error('aiSearchAnswer: invalid q', q); return; }
-    const opts = q.options.map((o, j) => `${String.fromCharCode(65 + j)}. ${o}`).join('\n');
-    const prompt = `题目：${q.q}\n选项：\n${opts}\n\n要求：\n- 耐心面向小升初学生讲解\n- 适当补充知识背景\n- 一步一步推演\n- 给出正确答案和解题过程`;
+    if (!q || !q.q) { console.error('aiSearchAnswer: invalid q', q); return; }
+    let prompt;
+    if (q.type === 'numberline') {
+      prompt = `题目（交互题 - 数轴定位）：${q.q}\n正确答案：${q.answer}\n\n要求：\n- 耐心面向小升初学生讲解数轴和绝对值的概念\n- 适当补充知识背景\n- 帮助理解为什么答案在数轴的这个位置`;
+    } else {
+      if (!q.options) return;
+      const opts = q.options.map((o, j) => `${String.fromCharCode(65 + j)}. ${o}`).join('\n');
+      prompt = `题目：${q.q}\n选项：\n${opts}\n\n要求：\n- 耐心面向小升初学生讲解\n- 适当补充知识背景\n- 一步一步推演\n- 给出正确答案和解题过程`;
+    }
 
     const popup = document.createElement('div');
     popup.className = 'knowledge-popup';
@@ -1089,4 +1230,142 @@ export function showModal(content, onClose) {
   document.addEventListener('keydown', handleEsc);
 
   document.body.appendChild(overlay);
+}
+
+/**
+ * 渲染侧边栏「你知道吗」跑马灯轮播
+ * @param {HTMLElement} container
+ * @param {number} galaxyId
+ */
+export function renderKnowledgeSidebar(container, galaxyId) {
+  const sections = KNOWLEDGE_SIDEBAR[galaxyId];
+  if (!sections || sections.length === 0) {
+    container.innerHTML = '<div style="color:#64748b;padding:1rem;font-size:0.9rem;">暂无该关的扩展知识</div>';
+    return;
+  }
+
+  // 展平为幻灯片列表
+  const slides = [];
+  sections.forEach(sec => {
+    sec.items.forEach(item => {
+      slides.push({
+        categoryTitle: sec.title,
+        categoryColor: sec.color,
+        label: item.label,
+        text: item.text
+      });
+    });
+  });
+
+  const total = slides.length;
+  let current = 0;
+  let timer = null;
+
+  function renderSlideHTML(index) {
+    const s = slides[index];
+    return `
+      <div class="marquee-category" style="color:${s.categoryColor}">${s.categoryTitle}</div>
+      <div class="marquee-label">${s.label}</div>
+      <div class="marquee-text">${s.text}</div>
+    `;
+  }
+
+  function updateView() {
+    const inner = container.querySelector('.marquee-viewport-inner');
+    const dots = container.querySelectorAll('.marquee-dot');
+    const counter = container.querySelector('.marquee-counter');
+    if (inner) {
+      inner.innerHTML = renderSlideHTML(current);
+      inner.style.animation = 'none';
+      inner.offsetHeight; // force reflow
+      inner.style.animation = 'marqueeFadeIn 0.45s ease';
+    }
+    dots.forEach((d, i) => d.classList.toggle('active', i === current));
+    if (counter) counter.textContent = `${current + 1} / ${total}`;
+  }
+
+  function goTo(index) {
+    current = ((index % total) + total) % total;
+    updateView();
+  }
+  function next() { goTo(current + 1); }
+  function prev() { goTo(current - 1); }
+
+  function startAuto() { stopAuto(); timer = setInterval(next, 5500); }
+  function stopAuto() { if (timer) { clearInterval(timer); timer = null; } }
+
+  // 构建 DOM
+  container.innerHTML = `
+    <div class="marquee-container">
+      <div class="sidebar-header">
+        <span class="sidebar-icon">💡</span>
+        <span>你知道吗</span>
+        <span class="marquee-counter">1 / ${total}</span>
+      </div>
+      <div class="marquee-viewport">
+        <div class="marquee-viewport-inner">
+          ${renderSlideHTML(0)}
+        </div>
+      </div>
+      <div class="marquee-footer">
+        <div class="marquee-dots">
+          ${Array.from({ length: total }, (_, i) =>
+            `<span class="marquee-dot${i === 0 ? ' active' : ''}"></span>`
+          ).join('')}
+        </div>
+        <div class="marquee-footer-right">
+          <button class="marquee-btn marquee-ai-btn" aria-label="AI 搜索" title="搜索更多相关知识">🤖 搜</button>
+          <button class="marquee-btn marquee-next" aria-label="下一条">下一条 →</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // 事件绑定
+  container.querySelector('.marquee-next')?.addEventListener('click', () => { next(); startAuto(); });
+
+  container.querySelector('.marquee-ai-btn')?.addEventListener('click', () => {
+    const s = slides[current];
+    const query = encodeURIComponent(s.label.replace(/^[^\s]+\s/, '') + ' 数学');
+    stopAuto();
+    // 打开 AI 搜索结果页（模拟弹窗）
+    const existing = container.querySelector('.marquee-ai-panel');
+    if (existing) { existing.remove(); startAuto(); return; }
+
+    const panel = document.createElement('div');
+    panel.className = 'marquee-ai-panel';
+    panel.innerHTML = `
+      <div class="marquee-ai-header">
+        <span>🤖 AI 搜索</span>
+        <button class="marquee-ai-close">✕</button>
+      </div>
+      <div class="marquee-ai-body">
+        <div class="marquee-ai-hint">关于「${s.label}」的搜索建议：</div>
+        <div class="marquee-ai-links">
+          <a href="https://www.bing.com/search?q=${query}" target="_blank" rel="noopener">🔍 Bing 搜索</a>
+          <a href="https://chat.deepseek.com/" target="_blank" rel="noopener">🤖 DeepSeek 对话</a>
+          <a href="https://www.baidu.com/s?wd=${query}" target="_blank" rel="noopener">🔍 百度搜索</a>
+        </div>
+        <div class="marquee-ai-tip">点击链接在新窗口查看详细内容</div>
+      </div>
+    `;
+    container.querySelector('.marquee-container')?.appendChild(panel);
+
+    panel.querySelector('.marquee-ai-close')?.addEventListener('click', () => {
+      panel.remove();
+      startAuto();
+    });
+  });
+
+  container.querySelectorAll('.marquee-dot').forEach((dot, i) => {
+    dot.addEventListener('click', () => { goTo(i); startAuto(); });
+  });
+
+  const vp = container.querySelector('.marquee-viewport');
+  if (vp) {
+    vp.addEventListener('mouseenter', stopAuto);
+    vp.addEventListener('mouseleave', startAuto);
+  }
+
+  startAuto();
 }
